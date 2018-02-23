@@ -1,0 +1,45 @@
+{
+  "name": "@adonisjs/lucid-slugify",
+  "version": "1.0.0",
+  "description": "A sample addon for AdonisJs",
+  "main": "index.js",
+  "scripts": {
+    "lint": "standard",
+    "pretest": "npm run lint",
+    "test": "DB=sqlite nyc japa",
+    "posttest": "npm run coverage",
+    "test:all": "DB=sqlite japa && DB=mysql japa && DB=pg japa",
+    "coverage": "nyc report --reporter=text-lcov | coveralls"
+  },
+  "private": true,
+  "keywords": [
+    "adonisjs",
+    "adonis-framework"
+  ],
+  "author": "virk",
+  "license": "MIT",
+  "devDependencies": {
+    "@adonisjs/fold": "^4.0.7",
+    "@adonisjs/lucid": "^5.0.3",
+    "@adonisjs/sink": "^1.0.13",
+    "coveralls": "^3.0.0",
+    "japa": "^1.0.5",
+    "japa-cli": "^1.0.1",
+    "mysql": "^2.15.0",
+    "nyc": "^11.4.1",
+    "pg": "^7.4.1",
+    "shortid": "^2.2.8",
+    "sqlite3": "^3.1.13",
+    "standard": "^10.0.3"
+  },
+  "dependencies": {
+    "@adonisjs/generic-exceptions": "^2.0.0",
+    "@slynova/slug": "^1.0.1",
+    "debug": "^3.1.0"
+  },
+  "standard": {
+    "globals": [
+      "use"
+    ]
+  }
+}
