@@ -23,6 +23,7 @@
     "@adonisjs/lucid": "^5.0.3",
     "@adonisjs/sink": "^1.0.13",
     "coveralls": "^3.0.0",
+    "cz-conventional-changelog": "^2.1.0",
     "japa": "^1.0.5",
     "japa-cli": "^1.0.1",
     "mysql": "^2.15.0",
@@ -41,5 +42,10 @@
     "globals": [
       "use"
     ]
+  },
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-changelog"
+    }
   }
 }
