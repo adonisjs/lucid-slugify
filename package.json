@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "A sample addon for AdonisJs",
   "main": "index.js",
+  "files": ["src", "providers"],
   "scripts": {
     "lint": "standard",
     "pretest": "npm run lint",
