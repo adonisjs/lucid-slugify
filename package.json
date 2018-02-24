@@ -1,9 +1,12 @@
 {
   "name": "@adonisjs/lucid-slugify",
   "version": "1.0.0",
-  "description": "A sample addon for AdonisJs",
+  "description": "Slugify addon for Adonisjs Lucid ORM",
   "main": "index.js",
-  "files": ["src", "providers"],
+  "files": [
+    "src",
+    "providers"
+  ],
   "scripts": {
     "lint": "standard",
     "pretest": "npm run lint",
@@ -12,10 +15,9 @@
     "test:all": "DB=sqlite japa && DB=mysql japa && DB=pg japa",
     "coverage": "nyc report --reporter=text-lcov | coveralls"
   },
-  "private": true,
   "keywords": [
     "adonisjs",
-    "adonis-framework"
+    "adonis-lucid"
   ],
   "author": "virk",
   "license": "MIT",
@@ -48,5 +50,16 @@
     "commitizen": {
       "path": "./node_modules/cz-conventional-changelog"
     }
-  }
+  },
+  "directories": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/adonisjs/adonis-lucid-slugify.git"
+  },
+  "bugs": {
+    "url": "https://github.com/adonisjs/adonis-lucid-slugify/issues"
+  },
+  "homepage": "https://github.com/adonisjs/adonis-lucid-slugify#readme"
 }
