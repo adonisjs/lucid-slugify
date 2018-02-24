@@ -32,7 +32,7 @@
     "pg": "^7.4.1",
     "shortid": "^2.2.8",
     "sqlite3": "^3.1.13",
-    "standard": "^10.0.3"
+    "standard": "^11.0.0"
   },
   "dependencies": {
     "@adonisjs/generic-exceptions": "^2.0.0",
