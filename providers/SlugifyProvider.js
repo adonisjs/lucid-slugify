@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
 */
 
-const ServiceProvider = require('@adonisjs/fold')
+const { ServiceProvider } = require('@adonisjs/fold')
 
 class SlugifyProvider extends ServiceProvider {
   register () {
