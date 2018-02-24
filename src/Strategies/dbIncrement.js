@@ -46,8 +46,6 @@ module.exports = async (field, value, modelInstance) => {
     return value
   }
 
-  const slugTokens = row.split('-')
-  const lastNum = Number(slugTokens[slugTokens.length - 1])
-
+  const lastNum = Number(row.replace(`${value}-`, ''))
   return !lastNum || isNaN(lastNum) ? `${value}-1` : `${value}-${lastNum + 1}`
 }

@@ -103,4 +103,15 @@ test.group('db increment', (group) => {
       assert.equal(slug, 'hello-world')
     })
   }
+
+  test('do not increment over the numbers in the base slug', async (assert) => {
+    const Model = use('Model')
+    class Post extends Model {}
+    Post._bootIfNotBooted()
+
+    await Post.create({ title: 'Adonis 101', slug: 'adonis-101' })
+
+    const slug = await dbIncrement('slug', 'adonis-101', new Post())
+    assert.equal(slug, 'adonis-101-1')
+  })
 })
