@@ -1,5 +1,7 @@
 # Adonis Lucid Slugify
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/adonisjs/adonis-lucid-slugify.svg)](https://greenkeeper.io/)
+
 This addon adds the functionality to generate unique `slugs` for multiple fields when saving them to the database using Lucid models.
 
 [![NPM Version][npm-image]][npm-url]
