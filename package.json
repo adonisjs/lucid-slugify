@@ -1,6 +1,6 @@
 {
   "name": "@adonisjs/lucid-slugify",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Slugify addon for Adonisjs Lucid ORM",
   "main": "index.js",
   "files": [
