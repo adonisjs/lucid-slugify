@@ -23,7 +23,7 @@ const Strategies = require('../Strategies')
  * @param {Object} options
  */
 class Slugify {
-  register (Model, options) {
+  register(Model, options) {
     if (!options || typeof (options) !== 'object') {
       throw GE.InvalidArgumentException.invalidParameter('Make sure to pass options object as 2nd parameter to Lucid/Slugify trait')
     }
@@ -52,6 +52,11 @@ class Slugify {
     }
 
     Model.addHook('beforeCreate', async (modelInstance) => {
+      Object.keys(fields).map(field => {
+        if (modelInstance.$attributes[field] != null) {
+          delete fields[field]
+        }
+      })
       await generateSlug(modelInstance.$attributes, modelInstance.$attributes, { fields, strategy }, modelInstance)
     })
 
@@ -60,6 +65,11 @@ class Slugify {
      */
     if (!options.disableUpdates) {
       Model.addHook('beforeUpdate', async (modelInstance) => {
+        Object.keys(fields).map(field => {
+          if (modelInstance.dirty[field] != null) {
+            delete fields[field]
+          }
+        })
         await generateSlug(modelInstance.dirty, modelInstance.$attributes, { fields, strategy }, modelInstance)
       })
     }
