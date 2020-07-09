@@ -39,7 +39,7 @@ module.exports = async (field, value, modelInstance) => {
     query.where(field, 'like', `${value}%`)
   }
 
-  const rows = await query.orderByRaw('SUBSTRING('+field+' FROM \'([0-9]+)\')::BIGINT DESC').pluck(field).limit(2)
+  const rows = await query.orderByRaw('SUBSTRING(' + field + ' FROM \'([0-9]+)\')::BIGINT DESC').pluck(field).limit(2)
   let row = null
 
   if (!rows || rows.length === 0) {
