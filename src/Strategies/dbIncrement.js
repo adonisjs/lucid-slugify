@@ -22,7 +22,6 @@
  * @return {String}
  */
 module.exports = async (field, value, modelInstance) => {
-  const primaryKey = modelInstance.constructor.primaryKey
   const query = modelInstance.constructor.queryWithOutScopes()
   const { connectionClient } = query.db
 
@@ -40,7 +39,7 @@ module.exports = async (field, value, modelInstance) => {
     query.where(field, 'like', `${value}%`)
   }
 
-  const [row] = await query.orderBy(primaryKey, 'desc').pluck(field).limit(1)
+  const [row] = await query.orderBy(field, 'desc').pluck(field).limit(1)
 
   if (!row) {
     return value
