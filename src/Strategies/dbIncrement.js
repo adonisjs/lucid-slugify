@@ -39,10 +39,15 @@ module.exports = async (field, value, modelInstance) => {
     query.where(field, 'like', `${value}%`)
   }
 
-  const [row] = await query.orderBy(field, 'desc').pluck(field).limit(1)
+  const rows = await query.orderByRaw('SUBSTRING('+field+' FROM \'([0-9]+)\')::BIGINT DESC').pluck(field).limit(2)
+  let row = null
 
-  if (!row) {
+  if (!rows || rows.length === 0) {
     return value
+  } else if (rows.length === 1) {
+    row = rows[0]
+  } else {
+    row = rows[1]
   }
 
   const lastNum = Number(row.replace(`${value}-`, ''))
