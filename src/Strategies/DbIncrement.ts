@@ -11,7 +11,7 @@
 
 import { Exception } from '@poppinss/utils'
 import { string } from '@poppinss/utils/build/helpers'
-import { column, LucidModel, LucidRow } from '@ioc:Adonis/Lucid/Orm'
+import { LucidModel, LucidRow } from '@ioc:Adonis/Lucid/Orm'
 import { DatabaseContract } from '@ioc:Adonis/Lucid/Database'
 import { SlugifyConfig, SlugifyStrategyContract } from '@ioc:Adonis/Addons/LucidSlugify'
 
