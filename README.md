@@ -1,8 +1,9 @@
 <div align="center"><img src="https://res.cloudinary.com/adonisjs/image/upload/q_100/v1564392111/adonis-banner_o9lunk.png" width="600px"></div>
+
 # @adonisjs/lucid-slugify
 > Tagline
 
-[![circleci-image]][circleci-url] [![npm-image]][npm-url] [![license-image]][license-url] [![typescript-image]][typescript-url]
+[![gh-workflow-image]][gh-workflow-url] [![npm-image]][npm-url] [![license-image]][license-url] [![typescript-image]][typescript-url]
 
 A short brief
 
@@ -15,8 +16,8 @@ A short brief
 
 ## Features
 
-[circleci-image]: https://img.shields.io/circleci/project/github/adonisjs/adonis-lucid-slugify/master.svg?style=for-the-badge&logo=circleci
-[circleci-url]: https://circleci.com/gh/adonisjs/adonis-lucid-slugify "circleci"
+[gh-workflow-image]: https://img.shields.io/github/workflow/status/adonisjs/lucid-slugify/test?style=for-the-badge
+[gh-workflow-url]: https://github.com/adonisjs/lucid-slugify/actions/workflows/test.yml "Github action"
 
 [npm-image]: https://img.shields.io/npm/v/@adonisjs/lucid-slugify.svg?style=for-the-badge&logo=npm
 [npm-url]: https://npmjs.org/package/@adonisjs/lucid-slugify "npm"
