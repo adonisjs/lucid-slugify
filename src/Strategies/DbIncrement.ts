@@ -11,7 +11,7 @@
 
 import { Exception } from '@poppinss/utils'
 import { string } from '@poppinss/utils/build/helpers'
-import { LucidModel, LucidRow } from '@ioc:Adonis/Lucid/Orm'
+import { column, LucidModel, LucidRow } from '@ioc:Adonis/Lucid/Orm'
 import { DatabaseContract } from '@ioc:Adonis/Lucid/Database'
 import { SlugifyConfig, SlugifyStrategyContract } from '@ioc:Adonis/Addons/LucidSlugify'
 
@@ -130,12 +130,7 @@ export class DbIncrement implements SlugifyStrategyContract {
   /**
    * Returns the slug for MYSQL >= 8.0
    */
-  private async getSlugForMysql(
-    model: LucidModel,
-    field: string,
-    columnName: string,
-    slug: string
-  ) {
+  private async getSlugForMysql(model: LucidModel, _: string, columnName: string, slug: string) {
     const rows = await model
       .query()
       .select(
@@ -143,7 +138,7 @@ export class DbIncrement implements SlugifyStrategyContract {
           `CAST(REGEXP_SUBSTR(${columnName}, '[0-9]+$') AS UNSIGNED) as ${this.counterName}`
         )
       )
-      .whereRaw(`?? REGEXP ?`, [field, `^${slug}(${this.separator}[0-9]*)?$`])
+      .whereRaw(`?? REGEXP ?`, [columnName, `^${slug}(${this.separator}[0-9]*)?$`])
       .orderBy(this.counterName, 'desc')
 
     return this.makeSlugFromCounter(slug, rows)
@@ -172,13 +167,13 @@ export class DbIncrement implements SlugifyStrategyContract {
    * Makes slug for PostgreSQL and redshift both. Redshift is not tested and
    * assumed to be compatible with PG.
    */
-  private async getSlugForPg(model: LucidModel, field: string, columnName: string, slug: string) {
+  private async getSlugForPg(model: LucidModel, _: string, columnName: string, slug: string) {
     const rows = await model
       .query()
       .select(
         this.db.raw(`SUBSTRING(${columnName} from '[0-9]+$')::INTEGER as ${this.counterName}`)
       )
-      .whereRaw(`?? ~* ?`, [field, `^${slug}(${this.separator}[0-9]*)?$`])
+      .whereRaw(`?? ~* ?`, [columnName, `^${slug}(${this.separator}[0-9]*)?$`])
       .orderBy(this.counterName, 'desc')
 
     return this.makeSlugFromCounter(slug, rows)
@@ -187,18 +182,13 @@ export class DbIncrement implements SlugifyStrategyContract {
   /**
    * Makes slug for Oracle. Oracle is not tested
    */
-  private async getSlugForOracle(
-    model: LucidModel,
-    field: string,
-    columnName: string,
-    slug: string
-  ) {
+  private async getSlugForOracle(model: LucidModel, _: string, columnName: string, slug: string) {
     const rows = await model
       .query()
       .select(
         this.db.raw(`TO_NUMBER(REGEXP_SUBSTR(${columnName}, '[0-9]+$')) as ${this.counterName}`)
       )
-      .whereRaw(`REGEXP_LIKE(??, ?)`, [field, `^${slug}(${this.separator}[0-9]*)?$`])
+      .whereRaw(`REGEXP_LIKE(??, ?)`, [columnName, `^${slug}(${this.separator}[0-9]*)?$`])
       .orderBy(this.counterName, 'desc')
 
     return this.makeSlugFromCounter(slug, rows)
