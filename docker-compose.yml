@@ -1,0 +1,40 @@
+version: '3.4'
+services:
+  mysql_legacy:
+    image: mysql:5.7
+    restart: always
+    environment:
+      MYSQL_DATABASE: lucid_slugify
+      MYSQL_USER: virk
+      MYSQL_PASSWORD: password
+      MYSQL_ROOT_PASSWORD: password
+    ports:
+      - '3306:3306'
+    expose:
+      - '3306'
+  mysql:
+    image: mysql:8.0
+    command: --default-authentication-plugin=mysql_native_password --sync_binlog=0 --innodb_doublewrite=OFF  --innodb-flush-log-at-trx-commit=0 --innodb-flush-method=nosync
+    environment:
+      MYSQL_DATABASE: lucid_slugify
+      MYSQL_USER: virk
+      MYSQL_PASSWORD: password
+      MYSQL_ROOT_PASSWORD: password
+    ports:
+      - '3307:3306'
+  pg:
+    image: postgres:11
+    restart: always
+    environment:
+      POSTGRES_DB: lucid_slugify
+      POSTGRES_USER: virk
+      POSTGRES_PASSWORD: password
+    ports:
+      - 5432:5432
+  mssql:
+    image: microsoft/mssql-server-linux:2017-latest
+    ports:
+      - 1433:1433
+    environment:
+      SA_PASSWORD: 'arandom&233password'
+      ACCEPT_EULA: 'true'

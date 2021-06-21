@@ -1,7 +1,13 @@
 {
   "name": "@adonisjs/lucid-slugify",
   "version": "1.0.3",
-  "description": "Slugify addon for Adonisjs Lucid ORM",
+  "description": "Generate unique slugs for your Lucid models",
+  "main": "build/providers/SlugifyProvider.js",
+  "files": [
+    "build/adonis-typings",
+    "build/providers",
+    "build/src"
+  ],
   "keywords": [
     "adonisjs",
     "adonis-lucid"
@@ -9,14 +15,19 @@
   "scripts": {
     "mrm": "mrm --preset=@adonisjs/mrm-preset",
     "pretest": "npm run lint",
-    "test": "node japaFile.js",
+    "test:sqlite": "DB=sqlite FORCE_COLOR=true node japaFile.js",
+    "test:mysql": "DB=mysql FORCE_COLOR=true node japaFile.js",
+    "test:mysql_legacy": "DB=mysql_legacy FORCE_COLOR=true node japaFile.js",
+    "test:mssql": "DB=mssql FORCE_COLOR=true node japaFile.js",
+    "test:pg": "DB=pg FORCE_COLOR=true node japaFile.js",
+    "test:docker": "npm run test:sqlite && npm run test:mysql && npm run test:mysql_legacy && npm run test:pg && npm run test:mssql",
+    "test": "docker-compose -f docker-compose.yml -f docker-compose-test.yml build && docker-compose -f docker-compose.yml -f docker-compose-test.yml run --rm test",
     "clean": "del build",
     "compile": "npm run lint && npm run clean && tsc",
     "build": "npm run compile",
     "prepublishOnly": "npm run build",
     "lint": "eslint . --ext=.ts",
     "format": "prettier --write .",
-    "commit": "git-cz",
     "release": "np",
     "version": "npm run build",
     "sync-labels": "github-label-sync --labels ./node_modules/@adonisjs/mrm-preset/gh-labels.json adonisjs/adonis-lucid-slugify"
@@ -32,44 +43,45 @@
   },
   "homepage": "https://github.com/adonisjs/adonis-lucid-slugify#readme",
   "devDependencies": {
-    "@adonisjs/mrm-preset": "^3.0.0",
-    "@adonisjs/require-ts": "^2.0.4",
-    "@types/node": "^15.0.2",
-    "commitizen": "^4.2.4",
-    "cz-conventional-changelog": "^3.3.0",
-    "del-cli": "^3.0.1",
-    "doctoc": "^2.0.0",
-    "eslint": "^7.26.0",
+    "@adonisjs/core": "^5.1.8",
+    "@adonisjs/lucid": "^15.0.1",
+    "@adonisjs/mrm-preset": "^4.1.0",
+    "@adonisjs/require-ts": "^2.0.6",
+    "@poppinss/dev-utils": "^1.1.4",
+    "@types/node": "^15.12.4",
+    "del-cli": "^4.0.0",
+    "dotenv": "^10.0.0",
+    "eslint": "^7.29.0",
     "eslint-config-prettier": "^8.3.0",
-    "eslint-plugin-adonis": "^1.3.1",
+    "eslint-plugin-adonis": "^1.3.2",
     "eslint-plugin-prettier": "^3.4.0",
-    "github-label-sync": "^2.0.0",
+    "github-label-sync": "^2.0.1",
     "husky": "^6.0.0",
     "japa": "^3.1.1",
-    "mrm": "^3.0.1",
+    "mrm": "^3.0.2",
+    "mysql": "^2.18.1",
     "np": "^7.5.0",
-    "prettier": "^2.3.0",
-    "typescript": "^4.2.4"
+    "pg": "^8.6.0",
+    "prettier": "^2.3.1",
+    "reflect-metadata": "^0.1.13",
+    "sqlite": "^4.0.23",
+    "sqlite3": "^5.0.2",
+    "tedious": "^11.0.9",
+    "typescript": "^4.3.4"
   },
-  "main": "build/index.js",
-  "files": [
-    "build/src",
-    "build/index.d.ts",
-    "build/index.js"
-  ],
-  "husky": {
-    "hooks": {
-      "pre-commit": "doctoc README.md --title='## Table of contents' && git add README.md",
-      "commit-msg": "node ./node_modules/@adonisjs/mrm-preset/validateCommit/conventional/validate.js"
-    }
-  },
-  "config": {
-    "commitizen": {
-      "path": "cz-conventional-changelog"
-    }
+  "peerDependencies": {
+    "@adonisjs/core": "^5.0.0",
+    "@adonisjs/lucid": "^15.0.0"
   },
   "np": {
     "contents": ".",
     "anyBranch": false
+  },
+  "publishConfig": {
+    "tag": "next",
+    "access": "public"
+  },
+  "dependencies": {
+    "@poppinss/utils": "^3.1.3"
   }
 }
