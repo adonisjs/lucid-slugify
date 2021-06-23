@@ -8,6 +8,7 @@
     "build/providers",
     "build/src"
   ],
+  "typings": "./build/adonis-typings/index.d.ts",
   "keywords": [
     "adonisjs",
     "adonis-lucid"

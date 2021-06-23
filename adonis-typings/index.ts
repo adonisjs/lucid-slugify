@@ -8,3 +8,4 @@
  */
 
 /// <reference path="./slugify.ts" />
+/// <reference path="./container.ts" />
