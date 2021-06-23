@@ -107,7 +107,7 @@ Following is the list of available options accepted by the `@slugify` decorator.
   <td valign="top"><code>"fields":</code></td>
   <td>
     <p>
-    An array of source fields to use for generating the slug. The value of multiple fields is concatenated using the `config.separator` property.
+    An array of source fields to use for generating the slug. The value of multiple fields is concatenated using the <code>config.separator</code> property.
     </p>
   </td>
 </tr>
@@ -115,7 +115,7 @@ Following is the list of available options accepted by the `@slugify` decorator.
   <td valign="top"><code>"strategy":</code></td>
   <td>
     <p>
-    Reference to pre-existing strategy or an object with the `makeSlug` and `‌makeSlugUnique` methods.
+    Reference to pre-existing strategy or an object with the <code>makeSlug</code> and <code>makeSlugUnique</code> methods.
     </p>
   </td>
 </tr>
@@ -123,7 +123,7 @@ Following is the list of available options accepted by the `@slugify` decorator.
   <td valign="top"><code>"allowUpdates":</code></td>
   <td>
     <p>
-    A boolean to enable updates. Updates are disabled by default.
+    A boolean to enable updates. <strong>Updates are disabled by default</strong>.
     </p>
   </td>
 </tr>
@@ -131,15 +131,17 @@ Following is the list of available options accepted by the `@slugify` decorator.
   <td valign="top"><code>"maxLength":</code></td>
   <td>
     <p>
-    The maximum length for the generated slug. The final slug value can be slightly over the defined `maxLength` in following scenarios. 
+    The maximum length for the generated slug. The final slug value can be slightly over the defined <code>maxLength</code> in following scenarios.
     </p>
-    
+    <p>
+      <strong>No max length is applied by default.</strong>
+    </p>
   <ul>
   <li>
-    When `completeWords` is set to true.
+    When <code>completeWords</code> is set to true.
   </li>
   <li>
-    When using the `dbIncrement` strategy. The counter value is appended after trimming the value for the `maxLength`.
+    When using the <code>dbIncrement</code> strategy. The counter value is appended after trimming the value for the <code>maxLength</code>.
   </li>
   </ul>
   </td>
@@ -148,7 +150,10 @@ Following is the list of available options accepted by the `@slugify` decorator.
   <td valign="top"><code>"completeWords":</code></td>
   <td>
     <p>
-    A boolean that forces to complete the words when applying the `maxLength` property. Completing words will generate a slug larger than the `maxLength`. So make sure to keep some buffer between the maxLength property and the database storage size.
+    A boolean that forces to complete the words when applying the <code>maxLength</code> property. Completing words will generate a slug larger than the <code>maxLength</code>. So make sure to keep some buffer between the maxLength property and the database storage size.
+    </p>
+    <p>
+      <strong>Complete words is disabled by default.</strong>
     </p>
   </td>
 </tr>
@@ -156,7 +161,7 @@ Following is the list of available options accepted by the `@slugify` decorator.
   <td valign="top"><code>"separator":</code></td>
   <td>
     <p>
-    The separator to use for creating the slug. A dash `-` is used by default.
+    The separator to use for creating the slug. <strong>A dash <code>-</code> is used by default.</strong>
     </p>
   </td>
 </tr>
@@ -164,10 +169,10 @@ Following is the list of available options accepted by the `@slugify` decorator.
   <td valign="top"><code>"transformer":</code></td>
   <td>
     <p>
-    A custom function to convert non-string data types to a string value. For example, if the source field from which slug is generated is a boolean, then we will convert it to `"1"` or `"0"`.
+    A custom function to convert non-string data types to a string value. For example, if the source field from which slug is generated is a boolean, then we will convert it to <code>"1"</code> or <code>"0"</code>.
     </p>
     <p>
-    By defining the `transformer` property you can decide how different data types can be converted to a string.
+    By defining the <code>transformer</code> property you can decide how different data types can be converted to a string.
     </p>
   </td>
 </tr>
