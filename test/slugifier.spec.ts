@@ -11,7 +11,7 @@ import test from 'japa'
 import { ApplicationContract } from '@ioc:Adonis/Core/Application'
 
 import { Slugifier } from '../src/Slugifier'
-import { DbIncrement } from '../src/Strategies/DbIncrement'
+import { DbIncrementStrategy } from '../src/Strategies/DbIncrement'
 import { setupApplication, fs, setupDb, cleanDb, clearDb } from '../test-helpers'
 
 let app: ApplicationContract
@@ -46,7 +46,10 @@ test.group('Slugifier', (group) => {
     const post = new Post()
     post.title = 'hello world'
 
-    const dbIncrement = new DbIncrement(Database, { strategy: 'dbIncrement', fields: ['title'] })
+    const dbIncrement = new DbIncrementStrategy(Database, {
+      strategy: 'dbIncrement',
+      fields: ['title'],
+    })
     const slugifier = new Slugifier(dbIncrement, Post, 'slug', {
       fields: ['title'],
       strategy: 'dbIncrement',
@@ -86,7 +89,10 @@ test.group('Slugifier', (group) => {
     const post = new Post()
     post.title = 'hello world'
 
-    const dbIncrement = new DbIncrement(Database, { strategy: 'dbIncrement', fields: ['title'] })
+    const dbIncrement = new DbIncrementStrategy(Database, {
+      strategy: 'dbIncrement',
+      fields: ['title'],
+    })
     const slugifier = new Slugifier(dbIncrement, Post, 'slug', {
       fields: ['title'],
       strategy: 'dbIncrement',
@@ -115,7 +121,7 @@ test.group('Slugifier', (group) => {
     post.title = 'hello world'
     post.createdAt = '2020-10-20'
 
-    const dbIncrement = new DbIncrement(Database, {
+    const dbIncrement = new DbIncrementStrategy(Database, {
       strategy: 'dbIncrement',
       fields: ['title', 'createdAt'],
     })
@@ -146,7 +152,7 @@ test.group('Slugifier', (group) => {
     const post = new Post()
     post.title = 'hello world'
 
-    const dbIncrement = new DbIncrement(Database, {
+    const dbIncrement = new DbIncrementStrategy(Database, {
       strategy: 'dbIncrement',
       fields: ['title', 'createdAt'],
     })
@@ -178,7 +184,7 @@ test.group('Slugifier', (group) => {
     post.title = 'hello world'
     post.isActive = true
 
-    const dbIncrement = new DbIncrement(Database, {
+    const dbIncrement = new DbIncrementStrategy(Database, {
       strategy: 'dbIncrement',
       fields: ['title', 'isActive'],
     })
@@ -210,7 +216,7 @@ test.group('Slugifier', (group) => {
     post.title = 'hello world'
     post.teamId = 42
 
-    const dbIncrement = new DbIncrement(Database, {
+    const dbIncrement = new DbIncrementStrategy(Database, {
       strategy: 'dbIncrement',
       fields: ['title', 'teamId'],
     })

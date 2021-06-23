@@ -8,7 +8,7 @@
  */
 
 import test from 'japa'
-import { DbIncrement } from '../src/Strategies/DbIncrement'
+import { DbIncrementStrategy } from '../src/Strategies/DbIncrement'
 import { ApplicationContract } from '@ioc:Adonis/Core/Application'
 import { setupApplication, fs, setupDb, cleanDb, clearDb } from '../test-helpers'
 
@@ -41,10 +41,10 @@ test.group('Db Increment Strategy', (group) => {
     Post.$addColumn('title', {})
     Post.$addColumn('slug', {})
 
-    const post = new Post()
-    post.title = 'hello world'
-
-    const dbIncrement = new DbIncrement(Database, { strategy: 'dbIncrement', fields: ['title'] })
+    const dbIncrement = new DbIncrementStrategy(Database, {
+      strategy: 'dbIncrement',
+      fields: ['title'],
+    })
     const uniqueSlug = await dbIncrement.makeSlugUnique(Post, 'slug', 'hello-world')
     assert.equal(uniqueSlug, 'hello-world')
   })
@@ -61,9 +61,6 @@ test.group('Db Increment Strategy', (group) => {
     Post.$addColumn('title', {})
     Post.$addColumn('slug', {})
 
-    const post = new Post()
-    post.title = 'hello world'
-
     await Post.createMany([
       {
         title: 'Hello world',
@@ -79,7 +76,10 @@ test.group('Db Increment Strategy', (group) => {
       },
     ])
 
-    const dbIncrement = new DbIncrement(Database, { strategy: 'dbIncrement', fields: ['title'] })
+    const dbIncrement = new DbIncrementStrategy(Database, {
+      strategy: 'dbIncrement',
+      fields: ['title'],
+    })
     const uniqueSlug = await dbIncrement.makeSlugUnique(Post, 'slug', 'hello-world')
     assert.equal(uniqueSlug, 'hello-world-1')
   })
@@ -96,9 +96,6 @@ test.group('Db Increment Strategy', (group) => {
     Post.$addColumn('title', {})
     Post.$addColumn('slug', {})
 
-    const post = new Post()
-    post.title = 'hello world'
-
     await Post.createMany([
       {
         title: 'Hello world',
@@ -114,7 +111,10 @@ test.group('Db Increment Strategy', (group) => {
       },
     ])
 
-    const dbIncrement = new DbIncrement(Database, { strategy: 'dbIncrement', fields: ['title'] })
+    const dbIncrement = new DbIncrementStrategy(Database, {
+      strategy: 'dbIncrement',
+      fields: ['title'],
+    })
     const uniqueSlug = await dbIncrement.makeSlugUnique(Post, 'slug', 'hello-world')
     assert.equal(uniqueSlug, 'hello-world-1')
   })
@@ -131,9 +131,6 @@ test.group('Db Increment Strategy', (group) => {
     Post.$addColumn('title', {})
     Post.$addColumn('slug', {})
 
-    const post = new Post()
-    post.title = 'hello world'
-
     await Post.createMany([
       {
         title: 'Hello world',
@@ -149,7 +146,10 @@ test.group('Db Increment Strategy', (group) => {
       },
     ])
 
-    const dbIncrement = new DbIncrement(Database, { strategy: 'dbIncrement', fields: ['title'] })
+    const dbIncrement = new DbIncrementStrategy(Database, {
+      strategy: 'dbIncrement',
+      fields: ['title'],
+    })
     const uniqueSlug = await dbIncrement.makeSlugUnique(Post, 'slug', 'post-11am-hello-world')
     assert.equal(uniqueSlug, 'post-11am-hello-world-1')
   })
@@ -166,9 +166,6 @@ test.group('Db Increment Strategy', (group) => {
     Post.$addColumn('title', {})
     Post.$addColumn('slug', {})
 
-    const post = new Post()
-    post.title = 'hello world'
-
     await Post.createMany([
       {
         title: 'Hello world',
@@ -182,9 +179,16 @@ test.group('Db Increment Strategy', (group) => {
         title: 'Hello world 4',
         slug: 'hello-world-4',
       },
+      {
+        title: 'Hello world fanny',
+        slug: 'hello-world-fanny',
+      },
     ])
 
-    const dbIncrement = new DbIncrement(Database, { strategy: 'dbIncrement', fields: ['title'] })
+    const dbIncrement = new DbIncrementStrategy(Database, {
+      strategy: 'dbIncrement',
+      fields: ['title'],
+    })
     const uniqueSlug = await dbIncrement.makeSlugUnique(Post, 'slug', 'hello-world')
     assert.equal(uniqueSlug, 'hello-world-5')
   })
@@ -217,10 +221,7 @@ test.group('Db Increment Strategy | custom separator', (group) => {
     Post.$addColumn('title', {})
     Post.$addColumn('slug', {})
 
-    const post = new Post()
-    post.title = 'hello world'
-
-    const dbIncrement = new DbIncrement(Database, {
+    const dbIncrement = new DbIncrementStrategy(Database, {
       strategy: 'dbIncrement',
       fields: ['title'],
       separator: '_',
@@ -241,9 +242,6 @@ test.group('Db Increment Strategy | custom separator', (group) => {
     Post.$addColumn('title', {})
     Post.$addColumn('slug', {})
 
-    const post = new Post()
-    post.title = 'hello world'
-
     await Post.createMany([
       {
         title: 'Hello world',
@@ -259,7 +257,7 @@ test.group('Db Increment Strategy | custom separator', (group) => {
       },
     ])
 
-    const dbIncrement = new DbIncrement(Database, {
+    const dbIncrement = new DbIncrementStrategy(Database, {
       strategy: 'dbIncrement',
       fields: ['title'],
       separator: '_',
@@ -280,9 +278,6 @@ test.group('Db Increment Strategy | custom separator', (group) => {
     Post.$addColumn('title', {})
     Post.$addColumn('slug', {})
 
-    const post = new Post()
-    post.title = 'hello world'
-
     await Post.createMany([
       {
         title: 'Hello world',
@@ -298,7 +293,7 @@ test.group('Db Increment Strategy | custom separator', (group) => {
       },
     ])
 
-    const dbIncrement = new DbIncrement(Database, {
+    const dbIncrement = new DbIncrementStrategy(Database, {
       strategy: 'dbIncrement',
       fields: ['title'],
       separator: '_',
@@ -319,9 +314,6 @@ test.group('Db Increment Strategy | custom separator', (group) => {
     Post.$addColumn('title', {})
     Post.$addColumn('slug', {})
 
-    const post = new Post()
-    post.title = 'hello world'
-
     await Post.createMany([
       {
         title: 'Hello world',
@@ -337,7 +329,7 @@ test.group('Db Increment Strategy | custom separator', (group) => {
       },
     ])
 
-    const dbIncrement = new DbIncrement(Database, {
+    const dbIncrement = new DbIncrementStrategy(Database, {
       strategy: 'dbIncrement',
       fields: ['title'],
       separator: '_',
@@ -358,9 +350,6 @@ test.group('Db Increment Strategy | custom separator', (group) => {
     Post.$addColumn('title', {})
     Post.$addColumn('slug', {})
 
-    const post = new Post()
-    post.title = 'hello world'
-
     await Post.createMany([
       {
         title: 'Hello world',
@@ -376,7 +365,7 @@ test.group('Db Increment Strategy | custom separator', (group) => {
       },
     ])
 
-    const dbIncrement = new DbIncrement(Database, {
+    const dbIncrement = new DbIncrementStrategy(Database, {
       strategy: 'dbIncrement',
       fields: ['title'],
       separator: '_',

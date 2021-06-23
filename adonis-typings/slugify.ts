@@ -18,6 +18,8 @@ declare module '@ioc:Adonis/Addons/LucidSlugify' {
   export type SlugifyConfig = {
     strategy: keyof StrategiesList | SlugifyStrategyContract
     fields: string[]
+    maxLength?: number
+    completeWords?: boolean
     allowUpdates?: boolean
     separator?: string
     transformer?: (value: any) => string
@@ -47,7 +49,9 @@ declare module '@ioc:Adonis/Addons/LucidSlugify' {
    * to allow other packages to add custom strategies
    */
   export interface StrategiesList {
+    simple: SlugifyStrategyContract
     dbIncrement: SlugifyStrategyContract
+    shortId: SlugifyStrategyContract
   }
 
   /**
@@ -81,5 +85,5 @@ declare module '@ioc:Adonis/Addons/LucidSlugify' {
   export type SlugifyDecorator = (options?: SlugifyConfig) => (target: any, property: any) => void
 
   export const slugify: SlugifyDecorator
-  export const SlugifyManager: SlugifyManagerContract
+  export const Slugify: SlugifyManagerContract
 }

@@ -10,19 +10,21 @@
 /// <reference path="../../adonis-typings/index.ts" />
 
 import { Exception } from '@poppinss/utils'
-import { string } from '@poppinss/utils/build/helpers'
 import { LucidModel, LucidRow } from '@ioc:Adonis/Lucid/Orm'
 import { DatabaseContract } from '@ioc:Adonis/Lucid/Database'
 import { SlugifyConfig, SlugifyStrategyContract } from '@ioc:Adonis/Addons/LucidSlugify'
 
+import { SimpleStrategy } from './Simple'
+
 /**
  * Uses a counter variable to make slugs unique
  */
-export class DbIncrement implements SlugifyStrategyContract {
-  private separator = this.config.separator || '-'
+export class DbIncrementStrategy extends SimpleStrategy implements SlugifyStrategyContract {
   private counterName = 'lucid_slugify_counter'
 
-  constructor(private db: DatabaseContract, private config: SlugifyConfig) {}
+  constructor(private db: DatabaseContract, config: SlugifyConfig) {
+    super(config)
+  }
 
   /**
    * Makes the slug by inspecting multiple similar rows in JavaScript
@@ -41,7 +43,10 @@ export class DbIncrement implements SlugifyStrategyContract {
     const slugs = rows.reduce<number[]>((result, row) => {
       const tokens = row[field].toLowerCase().split(`${slug}${this.separator}`)
       if (tokens.length === 2) {
-        result = result.concat(Number(tokens[1]))
+        const counter = Number(tokens[1])
+        if (!isNaN(counter)) {
+          result = result.concat(counter)
+        }
       }
       return result
     }, [])
@@ -192,14 +197,6 @@ export class DbIncrement implements SlugifyStrategyContract {
       .orderBy(this.counterName, 'desc')
 
     return this.makeSlugFromCounter(slug, rows)
-  }
-
-  /**
-   * Converts a value to URL safe slug. The uniqueness is handled by the
-   * "makeSlugUnique" method.
-   */
-  public makeSlug(_: LucidModel, __: string, value: string) {
-    return string.toSlug(value, { replacement: this.separator, lower: true })
   }
 
   /**

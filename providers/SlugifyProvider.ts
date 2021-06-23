@@ -21,7 +21,7 @@ export default class SlugifyProvider {
       const slugify = new Slugify(manager)
 
       return {
-        SlugifyManager: manager,
+        Slugify: manager,
         slugify: slugify.slugifyDecorator.bind(slugify),
       }
     })

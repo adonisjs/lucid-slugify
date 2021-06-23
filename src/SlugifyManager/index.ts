@@ -30,14 +30,30 @@ export class SlugifyManager implements SlugifyManagerContract {
   constructor(public application: ApplicationContract) {}
 
   /**
-   * Makes an instance of the db strategy
+   * Makes an instance of the simple strategy
+   */
+  private makeSimpleStrategy(config: SlugifyConfig) {
+    const { SimpleStrategy } = require('../Strategies/Simple')
+    return new SimpleStrategy(config)
+  }
+
+  /**
+   * Makes an instance of the dbIncrement strategy
    */
   private makeDbIncrementStrategy(config: SlugifyConfig) {
-    const { DbIncrement } = require('../Strategies/DbIncrement')
-    return new DbIncrement(
+    const { DbIncrementStrategy } = require('../Strategies/DbIncrement')
+    return new DbIncrementStrategy(
       this.application.container.resolveBinding('Adonis/Lucid/Database'),
       config
     )
+  }
+
+  /**
+   * Makes an instance of the shortid strategy
+   */
+  private makeShortIdStrategy(config: SlugifyConfig) {
+    const { ShortIdStrategy } = require('../Strategies/ShortId')
+    return new ShortIdStrategy(config)
   }
 
   /**
@@ -60,8 +76,12 @@ export class SlugifyManager implements SlugifyManagerContract {
    */
   public use(strategy: keyof StrategiesList, config: SlugifyConfig) {
     switch (strategy) {
+      case 'simple':
+        return this.makeSimpleStrategy(config)
       case 'dbIncrement':
         return this.makeDbIncrementStrategy(config)
+      case 'shortId':
+        return this.makeShortIdStrategy(config)
       default:
         return this.makeExtendedStrategy(strategy, config)
     }
