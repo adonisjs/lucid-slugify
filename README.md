@@ -32,7 +32,7 @@ npm i @adonisjs/lucid-slugify
 And then configure the package as follows:
 
 ```sh
-node ace configure @adonisjs/lucid
+node ace configure @adonisjs/lucid-slugify
 ```
 
 Once done, you need to use the following decorator on the field for which you want to generate the slug. Following is an example with the `Post` model generating slug from the **post title**.
