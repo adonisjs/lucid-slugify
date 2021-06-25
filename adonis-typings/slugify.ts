@@ -8,7 +8,7 @@
  */
 
 declare module '@ioc:Adonis/Addons/LucidSlugify' {
-  import { LucidModel } from '@ioc:Adonis/Lucid/Orm'
+  import { LucidModel, LucidRow } from '@ioc:Adonis/Lucid/Orm'
   import { ApplicationContract } from '@ioc:Adonis/Core/Application'
 
   /**
@@ -20,7 +20,7 @@ declare module '@ioc:Adonis/Addons/LucidSlugify' {
     fields: string[]
     maxLength?: number
     completeWords?: boolean
-    allowUpdates?: boolean
+    allowUpdates?: boolean | ((model: LucidRow) => boolean)
     separator?: string
     transformer?: (value: any) => string
   } & Record<string, any>

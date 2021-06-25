@@ -65,30 +65,38 @@ export class Slugify {
        * Create slug before the model is updated, only when allowUpdates
        * is set to true.
        */
-      if (config.allowUpdates) {
-        Model.before('update', async function (row) {
-          const rowModel = row.constructor as LucidModel
+      Model.before('update', async function (row) {
+        let allowUpdates = config.allowUpdates
+        allowUpdates = typeof allowUpdates === 'function' ? allowUpdates(row) : allowUpdates
 
-          /**
-           * Do not set slug when already defined manually
-           */
-          if (row.$dirty[property] !== undefined) {
-            return
-          }
+        /**
+         * Return early when updates are disabled
+         */
+        if (allowUpdates !== true) {
+          return
+        }
 
-          /**
-           * Do not set slug when none of the sources are changed
-           */
-          if (!config.fields.find((field) => row.$dirty[field] !== undefined)) {
-            return
-          }
+        const rowModel = row.constructor as LucidModel
 
-          const slug = await new Slugifier(strategy, rowModel, property, config).makeSlug(row)
-          if (slug) {
-            row[property] = slug
-          }
-        })
-      }
+        /**
+         * Do not set slug when already defined manually
+         */
+        if (row.$dirty[property] !== undefined) {
+          return
+        }
+
+        /**
+         * Do not set slug when none of the sources are changed
+         */
+        if (!config.fields.find((field) => row.$dirty[field] !== undefined)) {
+          return
+        }
+
+        const slug = await new Slugifier(strategy, rowModel, property, config).makeSlug(row)
+        if (slug) {
+          row[property] = slug
+        }
+      })
     }
   }
 }

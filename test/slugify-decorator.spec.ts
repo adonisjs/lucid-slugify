@@ -13,7 +13,7 @@ import { setupApplication, fs, setupDb, cleanDb, clearDb } from '../test-helpers
 
 let app: ApplicationContract
 
-test.group('Slugifier', (group) => {
+test.group('Slugify Decorator', (group) => {
   group.beforeEach(async () => {
     app = await setupApplication(['../../providers/SlugifyProvider'])
     await setupDb(app.container.resolveBinding('Adonis/Lucid/Database'))
@@ -215,6 +215,98 @@ test.group('Slugifier', (group) => {
 
     await post.refresh()
     assert.equal(post.slug, 'a-new-title')
+  })
+
+  test('update slug when allowUpdates function returns true', async (assert) => {
+    const { BaseModel, column } = app.container.resolveBinding('Adonis/Lucid/Orm')
+    const { slugify } = app.container.resolveBinding('Adonis/Addons/LucidSlugify')
+
+    class Post extends BaseModel {
+      @column({ isPrimary: true })
+      public id: number
+
+      @column()
+      public title: string
+
+      @column()
+      @slugify({
+        strategy: 'dbIncrement',
+        fields: ['title'],
+        allowUpdates: (post: Post) => {
+          assert.instanceOf(post, Post)
+          return true
+        },
+      })
+      public slug: string
+    }
+
+    await Post.createMany([
+      {
+        title: 'Hello world',
+        slug: 'hello-world',
+      },
+      {
+        title: 'Hello world',
+        slug: 'hello-10-world',
+      },
+      {
+        title: 'Hello world',
+        slug: 'hello10world',
+      },
+    ])
+
+    const post = await Post.findOrFail(1)
+    post.title = 'A new title'
+    await post.save()
+
+    await post.refresh()
+    assert.equal(post.slug, 'a-new-title')
+  })
+
+  test('do not update slug when allowUpdates function returns false', async (assert) => {
+    const { BaseModel, column } = app.container.resolveBinding('Adonis/Lucid/Orm')
+    const { slugify } = app.container.resolveBinding('Adonis/Addons/LucidSlugify')
+
+    class Post extends BaseModel {
+      @column({ isPrimary: true })
+      public id: number
+
+      @column()
+      public title: string
+
+      @column()
+      @slugify({
+        strategy: 'dbIncrement',
+        fields: ['title'],
+        allowUpdates: (post: Post) => {
+          assert.instanceOf(post, Post)
+          return false
+        },
+      })
+      public slug: string
+    }
+
+    await Post.createMany([
+      {
+        title: 'Hello world',
+        slug: 'hello-world',
+      },
+      {
+        title: 'Hello world',
+        slug: 'hello-10-world',
+      },
+      {
+        title: 'Hello world',
+        slug: 'hello10world',
+      },
+    ])
+
+    const post = await Post.findOrFail(1)
+    post.title = 'A new title'
+    await post.save()
+
+    await post.refresh()
+    assert.equal(post.slug, 'hello-world')
   })
 
   test('do not update slug when defined manually', async (assert) => {
