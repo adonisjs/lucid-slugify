@@ -288,7 +288,7 @@ class Post extends BaseModel {
 
   @column()
   @slugify({
-    strategy: 'simple',
+    strategy: 'shortId',
     fields: ['title']
   })
   public slug: string
