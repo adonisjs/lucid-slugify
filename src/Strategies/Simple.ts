@@ -26,7 +26,11 @@ export class SimpleStrategy implements SlugifyStrategyContract {
    * Makes the slug out the value string
    */
   public makeSlug(_: LucidModel, __: string, value: string) {
-    let baseSlug = string.toSlug(value, { replacement: this.separator, lower: true })
+    let baseSlug = string.toSlug(value, {
+      replacement: this.separator,
+      lower: true,
+      strict: true,
+    })
 
     /**
      * Limit to defined characters

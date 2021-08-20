@@ -94,4 +94,26 @@ test.group('Simple Strategy', (group) => {
     assert.equal(slug, 'this-is-a-long-title-that-needs-to-be-trimmed')
     assert.lengthOf(slug, 45)
   })
+
+  test('remove single quotes and question marks from the slug', async (assert) => {
+    const { BaseModel } = app.container.resolveBinding('Adonis/Lucid/Orm')
+
+    class Post extends BaseModel {
+      public title: string
+      public slug: string
+    }
+    Post.boot()
+    Post.$addColumn('title', {})
+    Post.$addColumn('slug', {})
+
+    const simpleStrategy = new SimpleStrategy({
+      strategy: 'simple',
+      fields: ['title'],
+    })
+
+    assert.equal(
+      simpleStrategy.makeSlug(Post, 'slug', `How's weather & life?`),
+      'hows-weather-and-life'
+    )
+  })
 })
