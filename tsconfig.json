@@ -1,7 +1,11 @@
 {
   "extends": "./node_modules/@adonisjs/mrm-preset/_tsconfig",
   "compilerOptions": {
-    "types": ["@adonisjs/core", "@adonisjs/lucid", "@types/node"],
+    "types": [
+      "@adonisjs/core",
+      "@adonisjs/lucid",
+      "@types/node"
+    ],
     "skipLibCheck": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true
