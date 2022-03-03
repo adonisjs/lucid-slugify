@@ -1,6 +1,6 @@
 {
   "name": "@adonisjs/lucid-slugify",
-  "version": "2.1.3",
+  "version": "2.1.4",
   "description": "Generate unique slugs for your Lucid models",
   "main": "build/providers/SlugifyProvider.js",
   "files": [
