@@ -13,7 +13,7 @@ export default class SlugifyProvider {
   constructor(protected application: ApplicationContract) {}
 
   public register() {
-    this.application.container.bind('Adonis/Addons/LucidSlugify', () => {
+    this.application.container.singleton('Adonis/Addons/LucidSlugify', () => {
       const { SlugifyManager } = require('../src/SlugifyManager')
       const { Slugify } = require('../src/Decorators/Slugify')
 
