@@ -10,10 +10,10 @@
 /// <reference path="../../adonis-typings/index.ts" />
 
 import { Exception } from '@poppinss/utils'
-import { LucidModel, LucidRow } from '@ioc:Adonis/Lucid/Orm'
+import { LucidModel, LucidRow, ModelQueryBuilderContract } from '@ioc:Adonis/Lucid/Orm'
 import { DatabaseContract } from '@ioc:Adonis/Lucid/Database'
 import { SlugifyConfig, SlugifyStrategyContract } from '@ioc:Adonis/Addons/LucidSlugify'
-
+import { types } from '@poppinss/utils/build/helpers'
 import { SimpleStrategy } from './Simple'
 
 /**
@@ -24,6 +24,12 @@ export class DbIncrementStrategy extends SimpleStrategy implements SlugifyStrate
 
   constructor(private db: DatabaseContract, config: SlugifyConfig) {
     super(config)
+  }
+
+  private onQuery(query: ModelQueryBuilderContract<LucidModel>, row: LucidRow) {
+    if (types.isFunction(this.config.onQuery)) {
+      this.config.onQuery(query, row)
+    }
   }
 
   /**
@@ -101,14 +107,19 @@ export class DbIncrementStrategy extends SimpleStrategy implements SlugifyStrate
     model: LucidModel,
     field: string,
     columnName: string,
-    slug: string
+    slug: string,
+    row: LucidRow
   ) {
-    const rows = await model
+    const query = model
       .query()
       .select(field)
       // raw where clause should using the column name
       .whereRaw('lower(??) = ?', [columnName, slug])
       .orWhereRaw('lower(??) like ?', [columnName, `${slug}${this.separator}%`])
+
+    this.onQuery(query, row)
+
+    const rows = await query.exec()
 
     return this.makeSlugFromMultipleRows(slug, field, rows)
   }
@@ -120,14 +131,19 @@ export class DbIncrementStrategy extends SimpleStrategy implements SlugifyStrate
     model: LucidModel,
     field: string,
     columnName: string,
-    slug: string
+    slug: string,
+    row: LucidRow
   ) {
-    const rows = await model
+    const query = model
       .query()
       .select(field)
       .where(field, slug)
       // raw where clause should using the column name
       .orWhereRaw(`?? REGEXP ?`, [columnName, `^${slug}(${this.separator}[0-9]*)?$`])
+
+    this.onQuery(query, row)
+
+    const rows = await query.exec()
 
     return this.makeSlugFromMultipleRows(slug, field, rows)
   }
@@ -135,8 +151,14 @@ export class DbIncrementStrategy extends SimpleStrategy implements SlugifyStrate
   /**
    * Returns the slug for MYSQL >= 8.0
    */
-  private async getSlugForMysql(model: LucidModel, _: string, columnName: string, slug: string) {
-    const rows = await model
+  private async getSlugForMysql(
+    model: LucidModel,
+    _: string,
+    columnName: string,
+    slug: string,
+    row: LucidRow
+  ) {
+    const query = model
       .query()
       .select(
         this.db.raw(
@@ -145,6 +167,10 @@ export class DbIncrementStrategy extends SimpleStrategy implements SlugifyStrate
       )
       .whereRaw(`?? REGEXP ?`, [columnName, `^${slug}(${this.separator}[0-9]*)?$`])
       .orderBy(this.counterName, 'desc')
+
+    this.onQuery(query, row)
+
+    const rows = await query.exec()
 
     return this.makeSlugFromCounter(slug, rows)
   }
@@ -158,12 +184,22 @@ export class DbIncrementStrategy extends SimpleStrategy implements SlugifyStrate
    * If you use MSSQL and concerned with performance. Please take out time and
    * help improve the MSSQL query
    */
-  private async getSlugForMssql(model: LucidModel, field: string, _: string, slug: string) {
-    const rows = await model
+  private async getSlugForMssql(
+    model: LucidModel,
+    field: string,
+    _: string,
+    slug: string,
+    row: LucidRow
+  ) {
+    const query = model
       .query()
       .select(field)
       .where(field, slug)
       .orWhere(field, 'like', `${slug}${this.separator}%`)
+
+    this.onQuery(query, row)
+
+    const rows = await query.exec()
 
     return this.makeSlugFromMultipleRows(slug, field, rows)
   }
@@ -172,8 +208,14 @@ export class DbIncrementStrategy extends SimpleStrategy implements SlugifyStrate
    * Makes slug for PostgreSQL and redshift both. Redshift is not tested and
    * assumed to be compatible with PG.
    */
-  private async getSlugForPg(model: LucidModel, _: string, columnName: string, slug: string) {
-    const rows = await model
+  private async getSlugForPg(
+    model: LucidModel,
+    _: string,
+    columnName: string,
+    slug: string,
+    row: LucidRow
+  ) {
+    const query = model
       .query()
       .select(
         this.db.raw(`SUBSTRING(${columnName} from '[0-9]+$')::INTEGER as ${this.counterName}`)
@@ -181,14 +223,24 @@ export class DbIncrementStrategy extends SimpleStrategy implements SlugifyStrate
       .whereRaw(`?? ~* ?`, [columnName, `^${slug}(${this.separator}[0-9]*)?$`])
       .orderBy(this.counterName, 'desc')
 
+    this.onQuery(query, row)
+
+    const rows = await query.exec()
+
     return this.makeSlugFromCounter(slug, rows)
   }
 
   /**
    * Makes slug for Oracle. Oracle is not tested
    */
-  private async getSlugForOracle(model: LucidModel, _: string, columnName: string, slug: string) {
-    const rows = await model
+  private async getSlugForOracle(
+    model: LucidModel,
+    _: string,
+    columnName: string,
+    slug: string,
+    row: LucidRow
+  ) {
+    const query = model
       .query()
       .select(
         this.db.raw(`TO_NUMBER(REGEXP_SUBSTR(${columnName}, '[0-9]+$')) as ${this.counterName}`)
@@ -196,13 +248,17 @@ export class DbIncrementStrategy extends SimpleStrategy implements SlugifyStrate
       .whereRaw(`REGEXP_LIKE(??, ?)`, [columnName, `^${slug}(${this.separator}[0-9]*)?$`])
       .orderBy(this.counterName, 'desc')
 
+    this.onQuery(query, row)
+
+    const rows = await query.exec()
+
     return this.makeSlugFromCounter(slug, rows)
   }
 
   /**
    * Converts an existing slug to a unique slug by inspecting the database
    */
-  public async makeSlugUnique(model: LucidModel, field: string, slug: string) {
+  public async makeSlugUnique(model: LucidModel, field: string, slug: string, row: LucidRow) {
     model.boot()
 
     const column = model.$columnsDefinitions.get(field)!
@@ -214,17 +270,17 @@ export class DbIncrementStrategy extends SimpleStrategy implements SlugifyStrate
     switch (dialectName) {
       case 'postgres':
       case 'redshift':
-        return this.getSlugForPg(model, field, columnName, slug)
+        return this.getSlugForPg(model, field, columnName, slug, row)
       case 'sqlite3':
-        return this.getSlugForSqlite(model, field, columnName, slug)
+        return this.getSlugForSqlite(model, field, columnName, slug, row)
       case 'mysql':
         return dialectVersion < 8
-          ? this.getSlugForOldMysql(model, field, columnName, slug)
-          : this.getSlugForMysql(model, field, columnName, slug)
+          ? this.getSlugForOldMysql(model, field, columnName, slug, row)
+          : this.getSlugForMysql(model, field, columnName, slug, row)
       case 'mssql':
-        return this.getSlugForMssql(model, field, columnName, slug)
+        return this.getSlugForMssql(model, field, columnName, slug, row)
       case 'oracledb':
-        return this.getSlugForOracle(model, field, columnName, slug)
+        return this.getSlugForOracle(model, field, columnName, slug, row)
       default:
         throw new Exception(
           `"${dialectName}" database is not supported for the dbIncrement strategy`,

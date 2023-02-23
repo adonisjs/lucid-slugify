@@ -9,7 +9,7 @@
 
 /// <reference path="../../adonis-typings/index.ts" />
 
-import { LucidModel } from '@ioc:Adonis/Lucid/Orm'
+import { LucidModel, LucidRow } from '@ioc:Adonis/Lucid/Orm'
 import { string } from '@poppinss/utils/build/helpers'
 import { SlugifyConfig, SlugifyStrategyContract } from '@ioc:Adonis/Addons/LucidSlugify'
 
@@ -20,12 +20,12 @@ export class SimpleStrategy implements SlugifyStrategyContract {
   protected separator = this.config.separator || '-'
   protected maxLengthBuffer = 0
 
-  constructor(private config: SlugifyConfig) {}
+  constructor(protected config: SlugifyConfig) {}
 
   /**
    * Makes the slug out the value string
    */
-  public makeSlug(_: LucidModel, __: string, value: string) {
+  public makeSlug(_: LucidModel, __: string, value: string, ___: LucidRow) {
     let baseSlug = string.toSlug(value, {
       replacement: this.separator,
       lower: true,
@@ -48,7 +48,7 @@ export class SimpleStrategy implements SlugifyStrategyContract {
   /**
    * Returns the slug as it is
    */
-  public async makeSlugUnique(_: LucidModel, __: string, slug: string) {
+  public async makeSlugUnique(_: LucidModel, __: string, slug: string, ___: LucidRow) {
     return slug
   }
 }

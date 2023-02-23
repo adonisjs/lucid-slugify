@@ -12,6 +12,7 @@
 import { LucidModel } from '@ioc:Adonis/Lucid/Orm'
 import { SlugifyConfig, SlugifyManagerContract } from '@ioc:Adonis/Addons/LucidSlugify'
 import { Slugifier } from '../Slugifier'
+import { types } from '@poppinss/utils/build/helpers'
 
 /**
  * Slugify classes exposes the "slugifyDecorator" method to be used
@@ -29,10 +30,9 @@ export class Slugify {
     /**
      * Resolve strategy as soon as someone uses the decorator
      */
-    const strategy =
-      typeof config.strategy === 'string'
-        ? this.slugifyManager.use(config.strategy, config)
-        : config.strategy
+    const strategy = types.isString(config.strategy)
+      ? this.slugifyManager.use(config.strategy, config)
+      : config.strategy
 
     return function decorateAsSlugify(target: any, property: string) {
       const Model = target.constructor as LucidModel

@@ -10,7 +10,7 @@
 /// <reference path="../../adonis-typings/index.ts" />
 
 import { nanoid } from 'nanoid'
-import { LucidModel } from '@ioc:Adonis/Lucid/Orm'
+import { LucidModel, LucidRow } from '@ioc:Adonis/Lucid/Orm'
 import { SlugifyStrategyContract } from '@ioc:Adonis/Addons/LucidSlugify'
 
 import { SimpleStrategy } from './Simple'
@@ -24,7 +24,7 @@ export class ShortIdStrategy extends SimpleStrategy implements SlugifyStrategyCo
   /**
    * Add shortid to the slug
    */
-  public async makeSlugUnique(_: LucidModel, __: string, slug: string) {
+  public async makeSlugUnique(_: LucidModel, __: string, slug: string, ___: LucidRow) {
     return `${slug}-${nanoid(this.maxLengthBuffer - 1)}`
   }
 }

@@ -8,7 +8,7 @@
  */
 
 declare module '@ioc:Adonis/Addons/LucidSlugify' {
-  import { LucidModel, LucidRow } from '@ioc:Adonis/Lucid/Orm'
+  import { LucidModel, LucidRow, ModelQueryBuilderContract } from '@ioc:Adonis/Lucid/Orm'
   import { ApplicationContract } from '@ioc:Adonis/Core/Application'
 
   /**
@@ -23,6 +23,7 @@ declare module '@ioc:Adonis/Addons/LucidSlugify' {
     allowUpdates?: boolean | ((model: LucidRow) => boolean)
     separator?: string
     transformer?: (value: any) => string
+    onQuery?: (query: ModelQueryBuilderContract<LucidModel>, row: LucidRow) => void
   } & Record<string, any>
 
   /**
@@ -32,12 +33,17 @@ declare module '@ioc:Adonis/Addons/LucidSlugify' {
     /**
      * Make slug for a given field and value
      */
-    makeSlug(model: LucidModel, field: string, value: string): string
+    makeSlug(model: LucidModel, field: string, value: string, row: LucidRow): string
 
     /**
      * Make the slug created by the "makeSlug" method unique.
      */
-    makeSlugUnique(model: LucidModel, field: string, value: string): Promise<string> | string
+    makeSlugUnique(
+      model: LucidModel,
+      field: string,
+      value: string,
+      row: LucidRow
+    ): Promise<string> | string
   }
 
   /**

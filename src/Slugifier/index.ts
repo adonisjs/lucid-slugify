@@ -79,7 +79,8 @@ export class Slugifier {
     return this.strategy.makeSlugUnique(
       this.model,
       this.field,
-      this.strategy.makeSlug(this.model, this.field, slugValue)
+      this.strategy.makeSlug(this.model, this.field, slugValue, row),
+      row
     )
   }
 }
