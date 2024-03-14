@@ -23,7 +23,7 @@ services:
     ports:
       - '3307:3306'
   pg:
-    image: postgres:11
+    image: postgres:15
     restart: always
     environment:
       POSTGRES_DB: lucid_slugify

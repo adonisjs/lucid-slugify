@@ -1,54 +1,44 @@
 {
   "name": "@adonisjs/lucid-slugify",
-  "version": "2.2.1",
   "description": "Generate unique slugs for your Lucid models",
-  "main": "build/providers/SlugifyProvider.js",
+  "version": "2.2.1",
+  "engines": {
+    "node": ">=20.6.0"
+  },
+  "type": "module",
   "files": [
-    "build/adonis-typings",
-    "build/providers",
-    "build/src"
-  ],
-  "typings": "./build/adonis-typings/index.d.ts",
-  "keywords": [
-    "adonisjs",
-    "adonis-lucid"
+    "build"
   ],
   "scripts": {
-    "mrm": "mrm --preset=@adonisjs/mrm-preset",
-    "pretest": "npm run lint",
-    "test:sqlite": "DB=sqlite FORCE_COLOR=true node ./.bin/test.js",
-    "test:mysql": "DB=mysql FORCE_COLOR=true node ./.bin/test.js",
-    "test:mysql_legacy": "DB=mysql_legacy FORCE_COLOR=true node ./.bin/test.js",
-    "test:mssql": "DB=mssql FORCE_COLOR=true node ./.bin/test.js",
-    "test:pg": "DB=pg FORCE_COLOR=true node ./.bin/test.js",
-    "test:docker": "npm run test:mysql && npm run test:mysql_legacy && npm run test:pg && npm run test:mssql",
-    "test": "docker-compose -f docker-compose.yml -f docker-compose-test.yml build && docker-compose -f docker-compose.yml -f docker-compose-test.yml run --rm test && npm run test:sqlite",
-    "clean": "del build",
-    "compile": "npm run lint && npm run clean && tsc",
-    "build": "npm run compile",
-    "prepublishOnly": "npm run build",
+    "clean": "del-cli build",
+    "copy:templates": "copyfiles --up 1 \"stubs/**/*.stub\" build",
+    "typecheck": "tsc --noEmit",
     "lint": "eslint . --ext=.ts",
     "format": "prettier --write .",
-    "release": "np --message=\"chore(release): %s\"",
+    "quick:test": "DB=sqlite node --enable-source-maps --loader=ts-node/esm ./bin/test.js",
+    "pretest": "npm run lint",
+    "prebuild": "npm run lint && npm run clean",
+    "compile": "tsup-node && tsc --emitDeclarationOnly --declaration",
+    "build": "tsup-node && tsc --emitDeclarationOnly --declaration && npm run copy:templates",
+    "release": "np",
+    "test:sqlite": "DB=sqlite FORCE_COLOR=true node --enable-source-maps --loader--loader=ts-node/esm ./bin/test.js",
+    "test:mysql": "DB=mysql FORCE_COLOR=true node --enable-source-maps --loader--loader=ts-node/esm ./bin/test.js",
+    "test:mysql_legacy": "DB=mysql_legacy FORCE_COLOR=true node --enable-source-maps --loader--loader=ts-node/esm ./bin/test.js",
+    "test:mssql": "DB=mssql FORCE_COLOR=true node --enable-source-maps --loader--loader=ts-node/esm ./bin/test.js",
+    "test:pg": "DB=pg FORCE_COLOR=true node --enable-source-maps --loader--loader=ts-node/esm ./bin/test.js",
+    "test:docker": "npm run test:mysql && npm run test:mysql_legacy && npm run test:pg && npm run test:mssql",
+    "test": "docker-compose -f docker-compose.yml -f docker-compose-test.yml build && docker-compose -f docker-compose.yml -f docker-compose-test.yml run --rm test && npm run test:sqlite",
     "version": "npm run build",
-    "sync-labels": "github-label-sync --labels ./node_modules/@adonisjs/mrm-preset/gh-labels.json adonisjs/lucid-slugify",
-    "commit": "git-cz"
+    "prepublishOnly": "npm run build"
   },
-  "author": "virk,adonisjs",
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/adonisjs/lucid-slugify.git"
-  },
-  "bugs": {
-    "url": "https://github.com/adonisjs/lucid-slugify/issues"
-  },
-  "homepage": "https://github.com/adonisjs/lucid-slugify#readme",
   "devDependencies": {
     "@adonisjs/core": "^5.8.2",
+    "@adonisjs/eslint-config": "^1.3.0",
     "@adonisjs/lucid": "^18.0.0",
     "@adonisjs/mrm-preset": "^5.0.3",
+    "@adonisjs/prettier-config": "^1.3.0",
     "@adonisjs/require-ts": "^2.0.11",
+    "@adonisjs/tsconfig": "^1.3.0",
     "@poppinss/dev-utils": "^2.0.3",
     "@types/node": "^18.7.3",
     "commitizen": "^4.2.4",
@@ -72,77 +62,57 @@
     "tedious": "^15.0.1",
     "typescript": "^4.6.4"
   },
-  "peerDependencies": {
-    "@adonisjs/core": "^5.8.0",
-    "@adonisjs/lucid": "^18.0.0"
-  },
-  "np": {
-    "contents": ".",
-    "anyBranch": false
-  },
-  "publishConfig": {
-    "tag": "latest",
-    "access": "public"
-  },
-  "adonisjs": {
-    "types": "@adonisjs/lucid-slugify",
-    "providers": [
-      "@adonisjs/lucid-slugify"
-    ]
-  },
   "dependencies": {
     "@poppinss/utils": "^4.0.4",
     "nanoid": "^3.3.4"
   },
-  "directories": {
-    "test": "test"
+  "peerDependencies": {
+    "@adonisjs/core": "^6.2.0",
+    "@adonisjs/lucid": "^20.0.0"
   },
-  "mrmConfig": {
-    "core": true,
-    "license": "MIT",
-    "services": [
-      "github-actions"
-    ],
-    "minNodeVersion": "14.15.4",
-    "probotApps": [
-      "stale",
-      "lock"
-    ],
-    "runGhActionsOnWindows": false
+  "author": "virk,adonisjs",
+  "license": "MIT",
+  "homepage": "https://github.com/adonisjs/lucid-slugify#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/adonisjs/lucid-slugify.git"
   },
-  "eslintConfig": {
-    "extends": [
-      "plugin:adonis/typescriptPackage",
-      "prettier"
-    ],
-    "plugins": [
-      "prettier"
-    ],
-    "rules": {
-      "prettier/prettier": [
-        "error",
-        {
-          "endOfLine": "auto"
-        }
-      ]
-    }
+  "bugs": {
+    "url": "https://github.com/adonisjs/lucid-slugify/issues"
   },
-  "eslintIgnore": [
-    "build"
+  "keywords": [
+    "adonisjs",
+    "adonis-lucid",
+    "slugify",
+    "slug"
   ],
-  "prettier": {
-    "trailingComma": "es5",
-    "semi": false,
-    "singleQuote": true,
-    "useTabs": false,
-    "quoteProps": "consistent",
-    "bracketSpacing": true,
-    "arrowParens": "always",
-    "printWidth": 100
+  "eslintConfig": {
+    "extends": "@adonisjs/eslint-config/package"
+  },
+  "prettier": "@adonisjs/prettier-config",
+  "publishConfig": {
+    "access": "public",
+    "tag": "next"
+  },
+  "np": {
+    "message": "chore(release): %s",
+    "tag": "next",
+    "branch": "next",
+    "anyBranch": false
   },
   "config": {
     "commitizen": {
       "path": "cz-conventional-changelog"
     }
+  },
+  "c8": {
+    "reporter": [
+      "text",
+      "html"
+    ],
+    "exclude": [
+      "tests/**",
+      "tests_helpers/**"
+    ]
   }
 }
