@@ -1,28 +1,26 @@
 /*
  * @adonisjs/lucid-slugify
  *
- * (c) Harminder Virk <virk@adonisjs.com>
+ * (c) AdonisJS
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
 
-/// <reference path="../../adonis-typings/index.ts" />
-
 import { Exception } from '@poppinss/utils'
-import { LucidModel, LucidRow } from '@ioc:Adonis/Lucid/Orm'
-import { DatabaseContract } from '@ioc:Adonis/Lucid/Database'
-import { SlugifyConfig, SlugifyStrategyContract } from '@ioc:Adonis/Addons/LucidSlugify'
+import type { Database } from '@adonisjs/lucid/database'
+import type { LucidModel, LucidRow } from '@adonisjs/lucid/types/model'
 
-import { SimpleStrategy } from './Simple'
+import { SimpleStrategy } from './simple.js'
+import type { SlugifyConfig, SlugifyStrategy } from '../types.js'
 
 /**
  * Uses a counter variable to make slugs unique
  */
-export class DbIncrementStrategy extends SimpleStrategy implements SlugifyStrategyContract {
+export class DbIncrementStrategy extends SimpleStrategy implements SlugifyStrategy {
   private counterName = 'lucid_slugify_counter'
 
-  constructor(private db: DatabaseContract, config: SlugifyConfig) {
+  constructor(private db: Database, config: SlugifyConfig) {
     super(config)
   }
 
@@ -40,11 +38,11 @@ export class DbIncrementStrategy extends SimpleStrategy implements SlugifyStrate
     /**
      * Find the rows that already has a counter
      */
-    const slugs = rows.reduce<number[]>((result, row) => {
+    const slugs = rows.reduce<number[]>((result, row: any) => {
       const tokens = row[field].toLowerCase().split(`${slug}${this.separator}`)
       if (tokens.length === 2) {
         const counter = Number(tokens[1])
-        if (!isNaN(counter)) {
+        if (!Number.isNaN(counter)) {
           result = result.concat(counter)
         }
       }
@@ -202,7 +200,7 @@ export class DbIncrementStrategy extends SimpleStrategy implements SlugifyStrate
   /**
    * Converts an existing slug to a unique slug by inspecting the database
    */
-  public async makeSlugUnique(model: LucidModel, field: string, slug: string) {
+  async makeSlugUnique(model: LucidModel, field: string, slug: string) {
     model.boot()
 
     const column = model.$columnsDefinitions.get(field)!
@@ -216,6 +214,7 @@ export class DbIncrementStrategy extends SimpleStrategy implements SlugifyStrate
       case 'redshift':
         return this.getSlugForPg(model, field, columnName, slug)
       case 'sqlite3':
+      case 'better-sqlite3':
         return this.getSlugForSqlite(model, field, columnName, slug)
       case 'mysql':
         return dialectVersion < 8
@@ -228,8 +227,7 @@ export class DbIncrementStrategy extends SimpleStrategy implements SlugifyStrate
       default:
         throw new Exception(
           `"${dialectName}" database is not supported for the dbIncrement strategy`,
-          500,
-          'E_UNSUPPORTED_DBINCREMENT_DIALECT'
+          { code: 'E_UNSUPPORTED_DBINCREMENT_DIALECT', status: 500 }
         )
     }
   }

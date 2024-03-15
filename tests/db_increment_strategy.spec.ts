@@ -1,47 +1,33 @@
 /*
  * @adonisjs/lucid-slugify
  *
- * (c) Harminder Virk <virk@adonisjs.com>
+ * (c) AdonisJS
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
 
-import test from 'japa'
-import { DbIncrementStrategy } from '../src/Strategies/DbIncrement'
-import { ApplicationContract } from '@ioc:Adonis/Core/Application'
-import { setupApplication, fs, setupDb, cleanDb, clearDb } from '../test-helpers'
+import { test } from '@japa/runner'
+import { BaseModel } from '@adonisjs/lucid/orm'
 
-let app: ApplicationContract
+import { DbIncrementStrategy } from '../src/strategies/db_increment.js'
+import { createDatabase, setupDb } from './helpers.js'
 
-test.group('Db Increment Strategy', (group) => {
-  group.beforeEach(async () => {
-    app = await setupApplication()
-    await setupDb(app.container.resolveBinding('Adonis/Lucid/Database'))
-  })
-
-  group.afterEach(async () => {
-    await clearDb(app.container.resolveBinding('Adonis/Lucid/Database'))
-  })
-
-  group.after(async () => {
-    await cleanDb(app.container.resolveBinding('Adonis/Lucid/Database'))
-    await fs.cleanup()
-  })
-
-  test('generate slug', async (assert) => {
-    const { BaseModel } = app.container.resolveBinding('Adonis/Lucid/Orm')
-    const Database = app.container.resolveBinding('Adonis/Lucid/Database')
+test.group('Db Increment Strategy', () => {
+  test('generate slug', async ({ assert }) => {
+    const db = createDatabase()
+    await setupDb(db)
 
     class Post extends BaseModel {
-      public title: string
-      public slug: string
+      declare title: string
+      declare slug: string
     }
+
     Post.boot()
     Post.$addColumn('title', {})
     Post.$addColumn('slug', {})
 
-    const dbIncrement = new DbIncrementStrategy(Database, {
+    const dbIncrement = new DbIncrementStrategy(db, {
       strategy: 'dbIncrement',
       fields: ['title'],
     })
@@ -49,13 +35,13 @@ test.group('Db Increment Strategy', (group) => {
     assert.equal(uniqueSlug, 'hello-world')
   })
 
-  test('add counter to existing duplicate slug', async (assert) => {
-    const { BaseModel } = app.container.resolveBinding('Adonis/Lucid/Orm')
-    const Database = app.container.resolveBinding('Adonis/Lucid/Database')
+  test('add counter to existing duplicate slug', async ({ assert }) => {
+    const db = createDatabase()
+    await setupDb(db)
 
     class Post extends BaseModel {
-      public title: string
-      public slug: string
+      declare title: string
+      declare slug: string
     }
     Post.boot()
     Post.$addColumn('title', {})
@@ -76,21 +62,21 @@ test.group('Db Increment Strategy', (group) => {
       },
     ])
 
-    const dbIncrement = new DbIncrementStrategy(Database, {
+    const dbIncrement = new DbIncrementStrategy(db, {
       strategy: 'dbIncrement',
       fields: ['title'],
     })
     const uniqueSlug = await dbIncrement.makeSlugUnique(Post, 'slug', 'hello-world')
-    assert.equal(uniqueSlug, 'hello-world-1')
+    assert.deepEqual(uniqueSlug, 'hello-world-1')
   })
 
-  test('perform case insensitive search', async (assert) => {
-    const { BaseModel } = app.container.resolveBinding('Adonis/Lucid/Orm')
-    const Database = app.container.resolveBinding('Adonis/Lucid/Database')
+  test('perform case insensitive search', async ({ assert }) => {
+    const db = createDatabase()
+    await setupDb(db)
 
     class Post extends BaseModel {
-      public title: string
-      public slug: string
+      declare title: string
+      declare slug: string
     }
     Post.boot()
     Post.$addColumn('title', {})
@@ -111,7 +97,7 @@ test.group('Db Increment Strategy', (group) => {
       },
     ])
 
-    const dbIncrement = new DbIncrementStrategy(Database, {
+    const dbIncrement = new DbIncrementStrategy(db, {
       strategy: 'dbIncrement',
       fields: ['title'],
     })
@@ -119,13 +105,13 @@ test.group('Db Increment Strategy', (group) => {
     assert.equal(uniqueSlug, 'hello-world-1')
   })
 
-  test('ignore in between numeric values when generating counter', async (assert) => {
-    const { BaseModel } = app.container.resolveBinding('Adonis/Lucid/Orm')
-    const Database = app.container.resolveBinding('Adonis/Lucid/Database')
+  test('ignore in between numeric values when generating counter', async ({ assert }) => {
+    const db = createDatabase()
+    await setupDb(db)
 
     class Post extends BaseModel {
-      public title: string
-      public slug: string
+      declare title: string
+      declare slug: string
     }
     Post.boot()
     Post.$addColumn('title', {})
@@ -146,7 +132,7 @@ test.group('Db Increment Strategy', (group) => {
       },
     ])
 
-    const dbIncrement = new DbIncrementStrategy(Database, {
+    const dbIncrement = new DbIncrementStrategy(db, {
       strategy: 'dbIncrement',
       fields: ['title'],
     })
@@ -154,13 +140,13 @@ test.group('Db Increment Strategy', (group) => {
     assert.equal(uniqueSlug, 'post-11am-hello-world-1')
   })
 
-  test('generate unique slug when counter was manually tweaked', async (assert) => {
-    const { BaseModel } = app.container.resolveBinding('Adonis/Lucid/Orm')
-    const Database = app.container.resolveBinding('Adonis/Lucid/Database')
+  test('generate unique slug when counter was manually tweaked', async ({ assert }) => {
+    const db = createDatabase()
+    await setupDb(db)
 
     class Post extends BaseModel {
-      public title: string
-      public slug: string
+      declare title: string
+      declare slug: string
     }
     Post.boot()
     Post.$addColumn('title', {})
@@ -185,7 +171,7 @@ test.group('Db Increment Strategy', (group) => {
       },
     ])
 
-    const dbIncrement = new DbIncrementStrategy(Database, {
+    const dbIncrement = new DbIncrementStrategy(db, {
       strategy: 'dbIncrement',
       fields: ['title'],
     })
@@ -194,34 +180,20 @@ test.group('Db Increment Strategy', (group) => {
   })
 })
 
-test.group('Db Increment Strategy | custom separator', (group) => {
-  group.beforeEach(async () => {
-    app = await setupApplication()
-    await setupDb(app.container.resolveBinding('Adonis/Lucid/Database'))
-  })
-
-  group.afterEach(async () => {
-    await clearDb(app.container.resolveBinding('Adonis/Lucid/Database'))
-  })
-
-  group.after(async () => {
-    await cleanDb(app.container.resolveBinding('Adonis/Lucid/Database'))
-    await fs.cleanup()
-  })
-
-  test('generate slug', async (assert) => {
-    const { BaseModel } = app.container.resolveBinding('Adonis/Lucid/Orm')
-    const Database = app.container.resolveBinding('Adonis/Lucid/Database')
+test.group('Db Increment Strategy | custom separator', () => {
+  test('generate slug', async ({ assert }) => {
+    const db = createDatabase()
+    await setupDb(db)
 
     class Post extends BaseModel {
-      public title: string
-      public slug: string
+      declare title: string
+      declare slug: string
     }
     Post.boot()
     Post.$addColumn('title', {})
     Post.$addColumn('slug', {})
 
-    const dbIncrement = new DbIncrementStrategy(Database, {
+    const dbIncrement = new DbIncrementStrategy(db, {
       strategy: 'dbIncrement',
       fields: ['title'],
       separator: '_',
@@ -230,13 +202,13 @@ test.group('Db Increment Strategy | custom separator', (group) => {
     assert.equal(uniqueSlug, 'hello_world')
   })
 
-  test('add counter to existing duplicate slug', async (assert) => {
-    const { BaseModel } = app.container.resolveBinding('Adonis/Lucid/Orm')
-    const Database = app.container.resolveBinding('Adonis/Lucid/Database')
+  test('add counter to existing duplicate slug', async ({ assert }) => {
+    const db = createDatabase()
+    await setupDb(db)
 
     class Post extends BaseModel {
-      public title: string
-      public slug: string
+      declare title: string
+      declare slug: string
     }
     Post.boot()
     Post.$addColumn('title', {})
@@ -257,7 +229,7 @@ test.group('Db Increment Strategy | custom separator', (group) => {
       },
     ])
 
-    const dbIncrement = new DbIncrementStrategy(Database, {
+    const dbIncrement = new DbIncrementStrategy(db, {
       strategy: 'dbIncrement',
       fields: ['title'],
       separator: '_',
@@ -266,13 +238,13 @@ test.group('Db Increment Strategy | custom separator', (group) => {
     assert.equal(uniqueSlug, 'hello_world_1')
   })
 
-  test('perform case insensitive search', async (assert) => {
-    const { BaseModel } = app.container.resolveBinding('Adonis/Lucid/Orm')
-    const Database = app.container.resolveBinding('Adonis/Lucid/Database')
+  test('perform case insensitive search', async ({ assert }) => {
+    const db = createDatabase()
+    await setupDb(db)
 
     class Post extends BaseModel {
-      public title: string
-      public slug: string
+      declare title: string
+      declare slug: string
     }
     Post.boot()
     Post.$addColumn('title', {})
@@ -293,7 +265,7 @@ test.group('Db Increment Strategy | custom separator', (group) => {
       },
     ])
 
-    const dbIncrement = new DbIncrementStrategy(Database, {
+    const dbIncrement = new DbIncrementStrategy(db, {
       strategy: 'dbIncrement',
       fields: ['title'],
       separator: '_',
@@ -302,13 +274,13 @@ test.group('Db Increment Strategy | custom separator', (group) => {
     assert.equal(uniqueSlug, 'hello_world_1')
   })
 
-  test('ignore in between numeric values when generating counter', async (assert) => {
-    const { BaseModel } = app.container.resolveBinding('Adonis/Lucid/Orm')
-    const Database = app.container.resolveBinding('Adonis/Lucid/Database')
+  test('ignore in between numeric values when generating counter', async ({ assert }) => {
+    const db = createDatabase()
+    await setupDb(db)
 
     class Post extends BaseModel {
-      public title: string
-      public slug: string
+      declare title: string
+      declare slug: string
     }
     Post.boot()
     Post.$addColumn('title', {})
@@ -329,7 +301,7 @@ test.group('Db Increment Strategy | custom separator', (group) => {
       },
     ])
 
-    const dbIncrement = new DbIncrementStrategy(Database, {
+    const dbIncrement = new DbIncrementStrategy(db, {
       strategy: 'dbIncrement',
       fields: ['title'],
       separator: '_',
@@ -338,13 +310,13 @@ test.group('Db Increment Strategy | custom separator', (group) => {
     assert.equal(uniqueSlug, 'post_11am_hello_world_1')
   })
 
-  test('generate unique slug when counter was manually tweaked', async (assert) => {
-    const { BaseModel } = app.container.resolveBinding('Adonis/Lucid/Orm')
-    const Database = app.container.resolveBinding('Adonis/Lucid/Database')
+  test('generate unique slug when counter was manually tweaked', async ({ assert }) => {
+    const db = createDatabase()
+    await setupDb(db)
 
     class Post extends BaseModel {
-      public title: string
-      public slug: string
+      declare title: string
+      declare slug: string
     }
     Post.boot()
     Post.$addColumn('title', {})
@@ -365,7 +337,7 @@ test.group('Db Increment Strategy | custom separator', (group) => {
       },
     ])
 
-    const dbIncrement = new DbIncrementStrategy(Database, {
+    const dbIncrement = new DbIncrementStrategy(db, {
       strategy: 'dbIncrement',
       fields: ['title'],
       separator: '_',

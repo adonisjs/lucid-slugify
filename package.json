@@ -9,6 +9,13 @@
   "files": [
     "build"
   ],
+  "exports": {
+    ".": "./build/index.js",
+    "./types": "./build/src/types.js",
+    "./decorator": "./build/services/slugify.js",
+    "./services/main": "./build/services/main.js",
+    "./slugify_provider": "./build/providers/slugify_provider.js"
+  },
   "scripts": {
     "clean": "del-cli build",
     "copy:templates": "copyfiles --up 1 \"stubs/**/*.stub\" build",
@@ -27,11 +34,11 @@
     "test:mssql": "DB=mssql FORCE_COLOR=true node --enable-source-maps --loader--loader=ts-node/esm ./bin/test.js",
     "test:pg": "DB=pg FORCE_COLOR=true node --enable-source-maps --loader--loader=ts-node/esm ./bin/test.js",
     "test:docker": "npm run test:mysql && npm run test:mysql_legacy && npm run test:pg && npm run test:mssql",
-    "test": "docker-compose -f docker-compose.yml -f docker-compose-test.yml build && docker-compose -f docker-compose.yml -f docker-compose-test.yml run --rm test && npm run test:sqlite",
     "version": "npm run build",
     "prepublishOnly": "npm run build"
   },
   "devDependencies": {
+    "@adonisjs/assembler": "^7.2.3",
     "@adonisjs/core": "^6.3.1",
     "@adonisjs/eslint-config": "^1.3.0",
     "@adonisjs/lucid": "^20.4.0",
@@ -48,6 +55,7 @@
     "dotenv": "^16.4.5",
     "eslint": "^8.57.0",
     "husky": "^9.0.11",
+    "luxon": "^3.4.4",
     "mysql": "^2.18.1",
     "np": "^10.0.1",
     "pg": "^8.11.3",
@@ -111,5 +119,19 @@
       "tests/**",
       "tests_helpers/**"
     ]
+  },
+  "tsup": {
+    "entry": [
+      "./index.ts",
+      "./src/types.ts",
+      "./providers/slugify_provider.ts",
+      "./services/main.ts",
+      "./services/slugify.ts"
+    ],
+    "outDir": "./build",
+    "clean": true,
+    "format": "esm",
+    "dts": false,
+    "target": "esnext"
   }
 }

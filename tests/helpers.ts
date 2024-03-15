@@ -1,31 +1,34 @@
 /*
  * @adonisjs/lucid-slugify
  *
- * (c) Harminder Virk <virk@adonisjs.com>
+ * (c) AdonisJS
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
 
-import { join } from 'path'
 import dotenv from 'dotenv'
-import { Filesystem } from '@poppinss/dev-utils'
-import { Application } from '@adonisjs/core/build/standalone'
-import { ConnectionConfig, DatabaseContract } from '@ioc:Adonis/Lucid/Database'
+import { join } from 'node:path'
+import { getActiveTest } from '@japa/runner'
+import { Emitter } from '@adonisjs/core/events'
+import { BaseModel } from '@adonisjs/lucid/orm'
+import { Database } from '@adonisjs/lucid/database'
+import { AppFactory } from '@adonisjs/core/factories/app'
+import { LoggerFactory } from '@adonisjs/core/factories/logger'
+import { ConnectionConfig } from '@adonisjs/lucid/types/database'
 
 dotenv.config()
-export const fs = new Filesystem(join(__dirname, '__app'))
 
 /**
  * Returns config based upon DB set in environment variables
  */
-export function getConfig(): ConnectionConfig {
+export function getConfig(basePath: string): ConnectionConfig {
   switch (process.env.DB) {
     case 'sqlite':
       return {
         client: 'sqlite',
         connection: {
-          filename: join(fs.basePath, 'db.sqlite'),
+          filename: join(basePath, 'db.sqlite'),
         },
         useNullAsDefault: true,
         debug: false,
@@ -91,52 +94,13 @@ export function getConfig(): ConnectionConfig {
 }
 
 /**
- * Setup the application
- */
-export async function setupApplication(
-  additionalProviders?: string[],
-  environment: 'web' | 'repl' | 'test' = 'test'
-) {
-  await fs.add('.env', '')
-  await fs.add(
-    'config/app.ts',
-    `
-    export const appKey = 'averylong32charsrandomsecretkey',
-    export const http = {
-      cookie: {},
-      trustProxy: () => true,
-    }
-  `
-  )
-
-  await fs.add(
-    'config/database.ts',
-    `const databaseConfig = {
-      connection: 'primary',
-      connections: {
-        primary: ${JSON.stringify(getConfig())}
-      }
-    }
-    export default databaseConfig`
-  )
-
-  const app = new Application(fs.basePath, environment, {
-    aliases: {
-      App: './app',
-    },
-    providers: ['@adonisjs/core', '@adonisjs/lucid'].concat(additionalProviders || []),
-  })
-
-  await app.setup()
-  await app.registerProviders()
-  await app.bootProviders()
-  return app
-}
-
-/**
  * Setup database initial state for testing
  */
-export async function setupDb(db: DatabaseContract) {
+export async function setupDb(db: Database) {
+  const test = getActiveTest()!
+
+  await test.context.fs.mkdir('config')
+
   const hasPostsTable = await db.connection().schema.hasTable('posts')
   if (!hasPostsTable) {
     await db.connection().schema.createTable('posts', (table) => {
@@ -148,15 +112,43 @@ export async function setupDb(db: DatabaseContract) {
 }
 
 /**
- * Cleandb database post testing
+ * Clean database post testing
  */
-export async function cleanDb(_db: DatabaseContract) {
-  // await db.connection().schema.dropTableIfExists('posts')
+export async function cleanDb(db: Database) {
+  await db.connection().schema.dropTableIfExists('posts')
 }
 
 /**
- * Cleardb database post testing
+ * Clear database post testing
  */
-export async function clearDb(db: DatabaseContract) {
+export async function clearDb(db: Database) {
   await db.connection().truncate('posts', true)
+}
+
+/**
+ * Create Database instance for testing
+ */
+export function createDatabase() {
+  const test = getActiveTest()
+  if (!test) {
+    throw new Error('Cannot use "createDatabase" outside of a Japa test')
+  }
+
+  const app = new AppFactory().create(test.context.fs.baseUrl, () => {})
+  const logger = new LoggerFactory().create()
+  const emitter = new Emitter(app)
+  const db = new Database(
+    {
+      connection: 'primary',
+      connections: {
+        primary: getConfig(test.context.fs.basePath),
+      },
+    },
+    logger,
+    emitter
+  )
+
+  test.cleanup(() => db.manager.closeAll())
+  BaseModel.$adapter = db.modelAdapter()
+  return db
 }

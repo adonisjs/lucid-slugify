@@ -1,29 +1,30 @@
 /*
  * @adonisjs/lucid-slugify
  *
- * (c) Harminder Virk <virk@adonisjs.com>
+ * (c) AdonisJS
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
 
-/// <reference path="../../adonis-typings/index.ts" />
+import { LucidModel, LucidRow } from '@adonisjs/lucid/types/model'
 
-import { LucidModel, LucidRow } from '@ioc:Adonis/Lucid/Orm'
-import { SlugifyConfig, SlugifyStrategyContract } from '@ioc:Adonis/Addons/LucidSlugify'
+import type { SlugifyStrategy, SlugifyConfig } from './types.js'
 
 /**
  * Makes the slug for a given model and field
  */
 export class Slugifier {
-  private separator = this.config.separator || '-'
+  private separator: string
 
   constructor(
-    private strategy: SlugifyStrategyContract,
+    private strategy: SlugifyStrategy,
     private model: LucidModel,
     private field: string,
     private config: SlugifyConfig
-  ) {}
+  ) {
+    this.separator = this.config.separator || '-'
+  }
 
   /**
    * Transform a given value to a string
@@ -55,7 +56,7 @@ export class Slugifier {
     let hasNullValues: boolean = false
 
     for (let field of this.config.fields) {
-      const value = row[field]
+      const value = (row as any)[field]
       if (value === null || value === undefined) {
         hasNullValues = true
         break
@@ -70,7 +71,7 @@ export class Slugifier {
   /**
    * Makes a slug for a given instance of model
    */
-  public async makeSlug(row: LucidRow) {
+  async makeSlug(row: LucidRow) {
     const slugValue = this.getSlugValue(row)
     if (!slugValue) {
       return null
