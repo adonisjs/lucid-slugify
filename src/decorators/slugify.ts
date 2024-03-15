@@ -30,9 +30,9 @@ export class Slugify {
      * Resolve strategy as soon as someone uses the decorator
      */
     const strategy =
-      typeof config?.strategy === 'string'
+      typeof config.strategy === 'string'
         ? this.slugifyManager.use(config.strategy, config)
-        : config?.strategy
+        : config.strategy
 
     return function decorateAsSlugify(target: any, property: string) {
       const Model = target.constructor as LucidModel
