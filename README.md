@@ -23,23 +23,17 @@ Generating slugs is easy, but keeping them unique and within a maximum length ra
 - Add your custom strategies
 
 ## Usage
-Install the package from the npm registry as follows:
+Install and configure the package as follows:
 
 ```sh
-npm i @adonisjs/lucid-slugify
-```
-
-And then configure the package as follows:
-
-```sh
-node ace configure @adonisjs/lucid-slugify
+node ace add @adonisjs/lucid-slugify
 ```
 
 Once done, you need to use the following decorator on the field for which you want to generate the slug. Following is an example with the `Post` model generating slug from the **post title**.
 
 ```ts
-import { BaseModel, column } from '@ioc:Adonis/Lucid/Orm'
-import { slugify } from '@ioc:Adonis/Addons/LucidSlugify'
+import { BaseModel, column } from '@adonisjs/lucid/orm'
+import slugify from '@adonisjs/lucid-slugify/decorator'
 
 class Post extends BaseModel {
   @column({ isPrimary: true })
@@ -205,8 +199,8 @@ If you generate another slug for the **Hello world** title, the `dbIncrement` st
 
 #### Model definition
 ```ts
-import { BaseModel, column } from '@ioc:Adonis/Lucid/Orm'
-import { slugify } from '@ioc:Adonis/Addons/LucidSlugify'
+import { BaseModel, column } from '@adonisjs/lucid/orm'
+import slugify from '@adonisjs/lucid-slugify/decorator'
 
 class Post extends BaseModel {
   @column({ isPrimary: true })
@@ -255,8 +249,8 @@ The implementation details vary a lot across different database drivers.
 The `simple` strategy just generates a slug respecting the `maxLength` and `completeWords` config options. No uniqueness is guaranteed when using this strategy.
 
 ```ts
-import { BaseModel, column } from '@ioc:Adonis/Lucid/Orm'
-import { slugify } from '@ioc:Adonis/Addons/LucidSlugify'
+import { BaseModel, column } from '@adonisjs/lucid/orm'
+import slugify from '@adonisjs/lucid-slugify/decorator'
 
 class Post extends BaseModel {
   @column({ isPrimary: true })
@@ -279,8 +273,8 @@ class Post extends BaseModel {
 The `shortId` strategy **appends a ten-digit long random short id** to the initial slug value for uniqueness. Following is an example of using the `shortId` strategy.
 
 ```ts
-import { BaseModel, column } from '@ioc:Adonis/Lucid/Orm'
-import { slugify } from '@ioc:Adonis/Addons/LucidSlugify'
+import { BaseModel, column } from '@adonisjs/lucid/orm'
+import slugify from '@adonisjs/lucid-slugify/decorator'
 
 class Post extends BaseModel {
   @column({ isPrimary: true })
@@ -314,9 +308,9 @@ You can add custom strategies using two different ways.
 The simplest way is to define the strategy inline in the decorator options. A strategy must implement the following two methods.
 
 ```ts
-import { SlugifyStrategyContract } from '@ioc:Adonis/Addons/LucidSlugify'
+import { SlugifyStrategy } from '@adonisjs/lucid-slugify/types
 
-const myCustomStrategy: SlugifyStrategyContract = {
+const myCustomStrategy: SlugifyStrategy = {
   makeSlug (model, field, value) {
     return // slug for the value
   },
@@ -332,17 +326,17 @@ const myCustomStrategy: SlugifyStrategyContract = {
 ```
 
 ### Extending the `slugify` package
-This is the recommended approach when you are distributing your strategy as an npm package. Every strategy must implement the `SlugifyStrategyContract` interface.
+This is the recommended approach when you are distributing your strategy as an npm package. Every strategy must implement the `SlugifyStrategy` interface.
 
 #### Define strategy
 
 ```ts
 import {
   SlugifyConfig,
-  SlugifyStrategyContract
-} from '@ioc:Adonis/Addons/LucidSlugify'
+  SlugifyStrategy
+} from '@adonisjs/lucid-slugify/types'
 
-class MyStrategy implements SlugifyStrategyContract {
+class MyStrategy implements SlugifyStrategy {
   constructor (private config: SlugifyConfig) {}
 
   makeSlug (
@@ -360,18 +354,18 @@ class MyStrategy implements SlugifyStrategyContract {
 ```
 
 #### Register the strategy
-Register the strategy using the `Slugify.extend` method. You must write the following code inside the provider `boot` method.
+Register the strategy using the `slugify.extend` method. You must write the following code inside the provider `boot` method.
 
 ```ts
-import { ApplicationContract } from '@ioc:Adonis/Core/Application'
+import type { ApplicationService } from '@adonisjs/core/types'
 
 export default class AppProvider {
-  constructor(protected app: ApplicationContract) {}
+  constructor(protected app: ApplicationService) {}
 
   public async boot() {
-    const { Slugify } = this.app.container.use('Adonis/Addons/LucidSlugify')
+    const slugify = await this.app.container.make('slugify.manager')
 
-    Slugify.extend('strategyName', (slugify, config) => {
+    slugify.extend('strategyName', (slugify, config) => {
       return new MyStrategy(config)
     })
   }
@@ -379,12 +373,12 @@ export default class AppProvider {
 ```
 
 #### Inform typescript about the strategy
-Finally, you will also have to inform typescript about the new strategy you added using the `Slugify.extend` method. We will use [declaration merging](https://www.typescriptlang.org/docs/handbook/declaration-merging.html#merging-interfaces) to add the property to the `StrategiesList` interface.
+Finally, you will also have to inform typescript about the new strategy you added using the `slugify.extend` method. We will use [declaration merging](https://www.typescriptlang.org/docs/handbook/declaration-merging.html#merging-interfaces) to add the property to the `StrategiesList` interface.
 
 ```ts
-declare module '@ioc:Adonis/Addons/LucidSlugify' {
+declare module '@adonisjs/lucid-slugify/types' {
   interface StrategiesList {
-    strategyName: SlugifyStrategyContract
+    strategyName: SlugifyStrategy
   }
 }
 ```
