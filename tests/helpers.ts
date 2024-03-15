@@ -33,28 +33,15 @@ export function getConfig(basePath: string): ConnectionConfig {
         useNullAsDefault: true,
         debug: false,
       }
-    case 'mysql':
+    case 'mysql2':
       return {
-        client: 'mysql',
+        client: 'mysql2',
         connection: {
           host: process.env.MYSQL_HOST as string,
           port: Number(process.env.MYSQL_PORT),
           database: process.env.DB_NAME as string,
           user: process.env.MYSQL_USER as string,
           password: process.env.MYSQL_PASSWORD as string,
-        },
-        useNullAsDefault: true,
-      }
-    case 'mysql_legacy':
-      return {
-        client: 'mysql',
-        version: '5.7',
-        connection: {
-          host: process.env.MYSQL_LEGACY_HOST as string,
-          port: Number(process.env.MYSQL_LEGACY_PORT),
-          database: process.env.DB_NAME as string,
-          user: process.env.MYSQL_LEGACY_USER as string,
-          password: process.env.MYSQL_LEGACY_PASSWORD as string,
         },
         useNullAsDefault: true,
       }
