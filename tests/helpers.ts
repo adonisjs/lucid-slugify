@@ -33,7 +33,7 @@ export function getConfig(basePath: string): ConnectionConfig {
         useNullAsDefault: true,
         debug: false,
       }
-    case 'mysql2':
+    case 'mysql':
       return {
         client: 'mysql2',
         connection: {
