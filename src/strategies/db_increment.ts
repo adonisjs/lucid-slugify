@@ -20,7 +20,10 @@ import type { SlugifyConfig, SlugifyStrategy } from '../types.js'
 export class DbIncrementStrategy extends SimpleStrategy implements SlugifyStrategy {
   private counterName = 'lucid_slugify_counter'
 
-  constructor(private db: Database, config: SlugifyConfig) {
+  constructor(
+    private db: Database,
+    config: SlugifyConfig
+  ) {
     super(config)
   }
 
