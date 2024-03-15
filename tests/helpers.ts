@@ -109,6 +109,10 @@ export async function setupDb(db: Database) {
       table.string('slug').nullable()
     })
   }
+
+  test.cleanup(async () => {
+    await db.connection().schema.dropTableIfExists('posts')
+  })
 }
 
 /**
