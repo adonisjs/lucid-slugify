@@ -34,6 +34,7 @@
     "test:mssql": "DB=mssql FORCE_COLOR=true node --enable-source-maps --loader--loader=ts-node/esm ./bin/test.js",
     "test:pg": "DB=pg FORCE_COLOR=true node --enable-source-maps --loader--loader=ts-node/esm ./bin/test.js",
     "test:docker": "npm run test:mysql && npm run test:mysql_legacy && npm run test:pg && npm run test:mssql",
+    "test": "c8 npm run test:docker",
     "version": "npm run build",
     "prepublishOnly": "npm run build"
   },
