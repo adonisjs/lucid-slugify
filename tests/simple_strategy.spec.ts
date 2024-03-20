@@ -1,34 +1,22 @@
 /*
  * @adonisjs/lucid-slugify
  *
- * (c) Harminder Virk <virk@adonisjs.com>
+ * (c) AdonisJS
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
 
-import test from 'japa'
-import { SimpleStrategy } from '../src/Strategies/Simple'
-import { ApplicationContract } from '@ioc:Adonis/Core/Application'
-import { setupApplication, fs } from '../test-helpers'
+import { test } from '@japa/runner'
+import { BaseModel } from '@adonisjs/lucid/orm'
 
-let app: ApplicationContract
+import { SimpleStrategy } from '../src/strategies/simple.js'
 
-test.group('Simple Strategy', (group) => {
-  group.beforeEach(async () => {
-    app = await setupApplication()
-  })
-
-  group.after(async () => {
-    await fs.cleanup()
-  })
-
-  test('generate slug', async (assert) => {
-    const { BaseModel } = app.container.resolveBinding('Adonis/Lucid/Orm')
-
+test.group('Simple Strategy', () => {
+  test('generate slug', async ({ assert }) => {
     class Post extends BaseModel {
-      public title: string
-      public slug: string
+      declare title: string
+      declare slug: string
     }
     Post.boot()
     Post.$addColumn('title', {})
@@ -39,15 +27,13 @@ test.group('Simple Strategy', (group) => {
       fields: ['title'],
     })
 
-    assert.equal(simpleStrategy.makeSlug(Post, 'slug', 'Hello world'), 'hello-world')
+    assert.deepEqual(simpleStrategy.makeSlug(Post, 'slug', 'Hello world'), 'hello-world')
   })
 
-  test('trim slug after defined maxLength', async (assert) => {
-    const { BaseModel } = app.container.resolveBinding('Adonis/Lucid/Orm')
-
+  test('trim slug after defined maxLength', async ({ assert }) => {
     class Post extends BaseModel {
-      public title: string
-      public slug: string
+      declare title: string
+      declare slug: string
     }
     Post.boot()
     Post.$addColumn('title', {})
@@ -68,12 +54,10 @@ test.group('Simple Strategy', (group) => {
     assert.lengthOf(slug, 40)
   })
 
-  test('complete words when trimming slug', async (assert) => {
-    const { BaseModel } = app.container.resolveBinding('Adonis/Lucid/Orm')
-
+  test('complete words when trimming slug', async ({ assert }) => {
     class Post extends BaseModel {
-      public title: string
-      public slug: string
+      declare title: string
+      declare slug: string
     }
     Post.boot()
     Post.$addColumn('title', {})
@@ -95,12 +79,10 @@ test.group('Simple Strategy', (group) => {
     assert.lengthOf(slug, 45)
   })
 
-  test('remove single quotes and question marks from the slug', async (assert) => {
-    const { BaseModel } = app.container.resolveBinding('Adonis/Lucid/Orm')
-
+  test('remove single quotes and question marks from the slug', async ({ assert }) => {
     class Post extends BaseModel {
-      public title: string
-      public slug: string
+      declare title: string
+      declare slug: string
     }
     Post.boot()
     Post.$addColumn('title', {})

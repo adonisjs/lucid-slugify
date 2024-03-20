@@ -1,17 +1,17 @@
 /*
  * @adonisjs/lucid-slugify
  *
- * (c) Harminder Virk <virk@adonisjs.com>
+ * (c) AdonisJS
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
 
-/// <reference path="../../adonis-typings/index.ts" />
+import type { LucidModel, LucidRow } from '@adonisjs/lucid/types/model'
 
-import { LucidModel } from '@ioc:Adonis/Lucid/Orm'
-import { SlugifyConfig, SlugifyManagerContract } from '@ioc:Adonis/Addons/LucidSlugify'
-import { Slugifier } from '../Slugifier'
+import { Slugifier } from '../slugifier.js'
+import type { SlugifyConfig } from '../types.js'
+import type { SlugifyManager } from '../slugify_manager.js'
 
 /**
  * Slugify classes exposes the "slugifyDecorator" method to be used
@@ -20,12 +20,12 @@ import { Slugifier } from '../Slugifier'
  * to resolve strategies
  */
 export class Slugify {
-  constructor(private slugifyManager: SlugifyManagerContract) {}
+  constructor(private slugifyManager: SlugifyManager) {}
 
   /**
    * To be exported from the container as a decorator
    */
-  public slugifyDecorator(config: SlugifyConfig) {
+  slugifyDecorator(config: SlugifyConfig) {
     /**
      * Resolve strategy as soon as someone uses the decorator
      */
@@ -45,7 +45,7 @@ export class Slugify {
       /**
        * Create slug before the model is persisted
        */
-      Model.before('create', async function (row) {
+      Model.before('create', async function (row: LucidRow & { [key: string]: any }) {
         const rowModel = row.constructor as LucidModel
 
         /**
@@ -65,7 +65,7 @@ export class Slugify {
        * Create slug before the model is updated, only when allowUpdates
        * is set to true.
        */
-      Model.before('update', async function (row) {
+      Model.before('update', async function (row: LucidRow & { [key: string]: any }) {
         let allowUpdates = config.allowUpdates
         allowUpdates = typeof allowUpdates === 'function' ? allowUpdates(row) : allowUpdates
 

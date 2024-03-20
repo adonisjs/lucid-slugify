@@ -1,43 +1,27 @@
 /*
  * @adonisjs/lucid-slugify
  *
- * (c) Harminder Virk <virk@adonisjs.com>
+ * (c) AdonisJS
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
 
-import test from 'japa'
-import { ApplicationContract } from '@ioc:Adonis/Core/Application'
+import { test } from '@japa/runner'
+import { BaseModel } from '@adonisjs/lucid/orm'
 
-import { Slugifier } from '../src/Slugifier'
-import { DbIncrementStrategy } from '../src/Strategies/DbIncrement'
-import { setupApplication, fs, setupDb, cleanDb, clearDb } from '../test-helpers'
+import { Slugifier } from '../src/slugifier.js'
+import { createDatabase, setupDb } from './helpers.js'
+import { DbIncrementStrategy } from '../src/strategies/db_increment.js'
 
-let app: ApplicationContract
-
-test.group('Slugifier', (group) => {
-  group.beforeEach(async () => {
-    app = await setupApplication()
-    await setupDb(app.container.resolveBinding('Adonis/Lucid/Database'))
-  })
-
-  group.afterEach(async () => {
-    await clearDb(app.container.resolveBinding('Adonis/Lucid/Database'))
-  })
-
-  group.after(async () => {
-    await cleanDb(app.container.resolveBinding('Adonis/Lucid/Database'))
-    await fs.cleanup()
-  })
-
-  test('generate slug for a model', async (assert) => {
-    const { BaseModel } = app.container.resolveBinding('Adonis/Lucid/Orm')
-    const Database = app.container.resolveBinding('Adonis/Lucid/Database')
+test.group('Slugifier', () => {
+  test('generate slug for a model', async ({ assert }) => {
+    const db = createDatabase()
+    await setupDb(db)
 
     class Post extends BaseModel {
-      public title: string
-      public slug: string
+      declare title: string
+      declare slug: string
     }
     Post.boot()
     Post.$addColumn('title', {})
@@ -46,7 +30,7 @@ test.group('Slugifier', (group) => {
     const post = new Post()
     post.title = 'hello world'
 
-    const dbIncrement = new DbIncrementStrategy(Database, {
+    const dbIncrement = new DbIncrementStrategy(db, {
       strategy: 'dbIncrement',
       fields: ['title'],
     })
@@ -59,13 +43,13 @@ test.group('Slugifier', (group) => {
     assert.equal(slug, 'hello-world')
   })
 
-  test('generate unique slug when a similar one already exists', async (assert) => {
-    const { BaseModel } = app.container.resolveBinding('Adonis/Lucid/Orm')
-    const Database = app.container.resolveBinding('Adonis/Lucid/Database')
+  test('generate unique slug when a similar one already exists', async ({ assert }) => {
+    const db = createDatabase()
+    await setupDb(db)
 
     class Post extends BaseModel {
-      public title: string
-      public slug: string
+      declare title: string
+      declare slug: string
     }
     Post.boot()
     Post.$addColumn('title', {})
@@ -89,7 +73,7 @@ test.group('Slugifier', (group) => {
     const post = new Post()
     post.title = 'hello world'
 
-    const dbIncrement = new DbIncrementStrategy(Database, {
+    const dbIncrement = new DbIncrementStrategy(db, {
       strategy: 'dbIncrement',
       fields: ['title'],
     })
@@ -102,14 +86,14 @@ test.group('Slugifier', (group) => {
     assert.equal(slug, 'hello-world-1')
   })
 
-  test('generate slug from multiple columns', async (assert) => {
-    const { BaseModel } = app.container.resolveBinding('Adonis/Lucid/Orm')
-    const Database = app.container.resolveBinding('Adonis/Lucid/Database')
+  test('generate slug from multiple columns', async ({ assert }) => {
+    const db = createDatabase()
+    await setupDb(db)
 
     class Post extends BaseModel {
-      public title: string
-      public createdAt: string
-      public slug: string
+      declare title: string
+      declare createdAt: string
+      declare slug: string
     }
 
     Post.boot()
@@ -121,7 +105,7 @@ test.group('Slugifier', (group) => {
     post.title = 'hello world'
     post.createdAt = '2020-10-20'
 
-    const dbIncrement = new DbIncrementStrategy(Database, {
+    const dbIncrement = new DbIncrementStrategy(db, {
       strategy: 'dbIncrement',
       fields: ['title', 'createdAt'],
     })
@@ -134,14 +118,14 @@ test.group('Slugifier', (group) => {
     assert.equal(slug, 'hello-world-2020-10-20')
   })
 
-  test('do not generate slug when one of the columns are not defined', async (assert) => {
-    const { BaseModel } = app.container.resolveBinding('Adonis/Lucid/Orm')
-    const Database = app.container.resolveBinding('Adonis/Lucid/Database')
+  test('do not generate slug when one of the columns are not defined', async ({ assert }) => {
+    const db = createDatabase()
+    await setupDb(db)
 
     class Post extends BaseModel {
-      public title: string
-      public createdAt: string
-      public slug: string
+      declare title: string
+      declare createdAt: string
+      declare slug: string
     }
 
     Post.boot()
@@ -152,7 +136,7 @@ test.group('Slugifier', (group) => {
     const post = new Post()
     post.title = 'hello world'
 
-    const dbIncrement = new DbIncrementStrategy(Database, {
+    const dbIncrement = new DbIncrementStrategy(db, {
       strategy: 'dbIncrement',
       fields: ['title', 'createdAt'],
     })
@@ -165,14 +149,14 @@ test.group('Slugifier', (group) => {
     assert.isNull(slug)
   })
 
-  test('cast booleans to string', async (assert) => {
-    const { BaseModel } = app.container.resolveBinding('Adonis/Lucid/Orm')
-    const Database = app.container.resolveBinding('Adonis/Lucid/Database')
+  test('cast booleans to string', async ({ assert }) => {
+    const db = createDatabase()
+    await setupDb(db)
 
     class Post extends BaseModel {
-      public title: string
-      public isActive: boolean
-      public slug: string
+      declare title: string
+      declare isActive: boolean
+      declare slug: string
     }
 
     Post.boot()
@@ -184,7 +168,7 @@ test.group('Slugifier', (group) => {
     post.title = 'hello world'
     post.isActive = true
 
-    const dbIncrement = new DbIncrementStrategy(Database, {
+    const dbIncrement = new DbIncrementStrategy(db, {
       strategy: 'dbIncrement',
       fields: ['title', 'isActive'],
     })
@@ -197,14 +181,14 @@ test.group('Slugifier', (group) => {
     assert.equal(slug, 'hello-world-1')
   })
 
-  test('cast numbers to string', async (assert) => {
-    const { BaseModel } = app.container.resolveBinding('Adonis/Lucid/Orm')
-    const Database = app.container.resolveBinding('Adonis/Lucid/Database')
+  test('cast numbers to string', async ({ assert }) => {
+    const db = createDatabase()
+    await setupDb(db)
 
     class Post extends BaseModel {
-      public title: string
-      public teamId: number
-      public slug: string
+      declare title: string
+      declare teamId: number
+      declare slug: string
     }
 
     Post.boot()
@@ -216,7 +200,7 @@ test.group('Slugifier', (group) => {
     post.title = 'hello world'
     post.teamId = 42
 
-    const dbIncrement = new DbIncrementStrategy(Database, {
+    const dbIncrement = new DbIncrementStrategy(db, {
       strategy: 'dbIncrement',
       fields: ['title', 'teamId'],
     })

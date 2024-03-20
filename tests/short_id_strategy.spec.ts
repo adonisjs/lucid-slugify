@@ -1,35 +1,24 @@
 /*
  * @adonisjs/lucid-slugify
  *
- * (c) Harminder Virk <virk@adonisjs.com>
+ * (c) AdonisJS
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
 
-import test from 'japa'
-import { ShortIdStrategy } from '../src/Strategies/ShortId'
-import { ApplicationContract } from '@ioc:Adonis/Core/Application'
-import { setupApplication, fs } from '../test-helpers'
+import { test } from '@japa/runner'
+import { BaseModel } from '@adonisjs/lucid/orm'
 
-let app: ApplicationContract
+import { ShortIdStrategy } from '../src/strategies/short_id.js'
 
-test.group('ShortId Strategy', (group) => {
-  group.beforeEach(async () => {
-    app = await setupApplication()
-  })
-
-  group.after(async () => {
-    await fs.cleanup()
-  })
-
-  test('generate slug', async (assert) => {
-    const { BaseModel } = app.container.resolveBinding('Adonis/Lucid/Orm')
-
+test.group('ShortId Strategy', () => {
+  test('generate slug', async ({ assert }) => {
     class Post extends BaseModel {
-      public title: string
-      public slug: string
+      declare title: string
+      declare slug: string
     }
+
     Post.boot()
     Post.$addColumn('title', {})
     Post.$addColumn('slug', {})
@@ -44,12 +33,10 @@ test.group('ShortId Strategy', (group) => {
     assert.match(uniqueSlug, /hello-world-.*/)
   })
 
-  test('slug maxLength must take shortId length into account', async (assert) => {
-    const { BaseModel } = app.container.resolveBinding('Adonis/Lucid/Orm')
-
+  test('slug maxLength must take shortId length into account', async ({ assert }) => {
     class Post extends BaseModel {
-      public title: string
-      public slug: string
+      declare title: string
+      declare slug: string
     }
     Post.boot()
     Post.$addColumn('title', {})

@@ -1,32 +1,33 @@
 /*
  * @adonisjs/lucid-slugify
  *
- * (c) Harminder Virk <virk@adonisjs.com>
+ * (c) AdonisJS
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
 
-/// <reference path="../../adonis-typings/index.ts" />
+import string from '@adonisjs/core/helpers/string'
+import { LucidModel } from '@adonisjs/lucid/types/model'
 
-import { LucidModel } from '@ioc:Adonis/Lucid/Orm'
-import { string } from '@poppinss/utils/build/helpers'
-import { SlugifyConfig, SlugifyStrategyContract } from '@ioc:Adonis/Addons/LucidSlugify'
+import type { SlugifyConfig, SlugifyStrategy } from '../types.js'
 
 /**
  * A simple strategy to generate slugs
  */
-export class SimpleStrategy implements SlugifyStrategyContract {
-  protected separator = this.config.separator || '-'
+export class SimpleStrategy implements SlugifyStrategy {
+  protected separator: string
   protected maxLengthBuffer = 0
 
-  constructor(private config: SlugifyConfig) {}
+  constructor(private config: SlugifyConfig) {
+    this.separator = this.config.separator || '-'
+  }
 
   /**
    * Makes the slug out the value string
    */
-  public makeSlug(_: LucidModel, __: string, value: string) {
-    let baseSlug = string.toSlug(value, {
+  makeSlug(_: LucidModel, __: string, value: string) {
+    let baseSlug = string.slug(value, {
       replacement: this.separator,
       lower: true,
       strict: true,
@@ -48,7 +49,7 @@ export class SimpleStrategy implements SlugifyStrategyContract {
   /**
    * Returns the slug as it is
    */
-  public async makeSlugUnique(_: LucidModel, __: string, slug: string) {
+  async makeSlugUnique(_: LucidModel, __: string, slug: string) {
     return slug
   }
 }

@@ -2,12 +2,118 @@ name: test
 on:
   - push
   - pull_request
+
 jobs:
-  build:
+  lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 21
+      - run: npm install
+      - run: npm run lint
+
+  typecheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 21
+      - run: npm install
+      - run: npm run typecheck
+
+  test-postgres:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        postgres-version: [15]
+    services:
+      pg:
+        image: postgres:${{ matrix.postgres-version }}
+        env:
+          POSTGRES_DB: lucid_slugify
+          POSTGRES_USER: virk
+          POSTGRES_PASSWORD: password
+        ports:
+          - 5432:5432
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
       - name: Install
         run: npm install
-      - name: Run tests
-        run: npm run test
+      - name: Run Postgres Tests
+        run: npm run test:pg
+
+  test-mysql:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [20, 21]
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_DATABASE: lucid_slugify
+          MYSQL_USER: virk
+          MYSQL_PASSWORD: password
+          MYSQL_ROOT_PASSWORD: password
+          MYSQL_PORT: 3306
+        ports:
+          - '3306:3306'
+          - '3308:3306'
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: Install
+        run: npm install
+      - name: Run Mysql Tests
+        run: npm run test:mysql
+
+  test-sqlite:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        lib: ['sqlite']
+        node-version: [20, 21]
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: Install
+        run: npm install
+      - name: Run Sqlite Tests
+        run: npm run test:${{ matrix.lib }}
+
+  test-mssql:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [20, 21]
+    services:
+      mssql:
+        image: mcr.microsoft.com/mssql/server:2019-latest
+        env:
+          SA_PASSWORD: 'arandom&233password'
+          ACCEPT_EULA: 'Y'
+        ports:
+          - '1433:1433'
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: Install
+        run: npm install
+      - name: Run Mssql Tests
+        run: npm run test:mssql
