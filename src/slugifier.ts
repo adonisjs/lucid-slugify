@@ -37,6 +37,24 @@ import type { SlugifierConfig, SlugifyStrategyContract } from './types.js'
  * ```
  */
 export class Slugifier<Model extends LucidModel, SlugField extends keyof InstanceType<Model>> {
+  /**
+   * Convert a value to a URL-safe slug. Feel free to replace this
+   * method with a custom implementation.
+   */
+  static slugify(
+    value: string,
+    options: {
+      separator: string
+      lower: boolean
+    }
+  ) {
+    return stringHelpers.slug(value, {
+      strict: true,
+      lower: options.lower,
+      replacement: options.separator,
+    })
+  }
+
   #slugField: SlugField
   #separator: string
   #model: Model
@@ -108,10 +126,9 @@ export class Slugifier<Model extends LucidModel, SlugField extends keyof Instanc
    * Transforms a string value to a URL-safe slug
    */
   #makeSlug(value: string) {
-    let slug = stringHelpers.slug(value, {
-      replacement: this.#separator,
+    let slug = Slugifier.slugify(value, {
+      separator: this.#separator,
       lower: true,
-      strict: true,
     })
 
     /**
