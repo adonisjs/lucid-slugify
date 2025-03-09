@@ -1,10 +1,14 @@
 # @adonisjs/lucid-slugify
+> Create URL-safe unique slugs and persist them to the database using Lucid models.
 
 <br />
 
 [![gh-workflow-image]][gh-workflow-url] [![npm-image]][npm-url] ![][typescript-image] [![license-image]][license-url]
 
 ## Introduction
+Generating slugs is easy, but keeping them unique is hard. This package abstracts the hard parts and gives you a simple API to generate and persist unique slugs to the database.
+
+Lucid slugify exports the `@slugify` decorator that you can use on the models fields to mark them as slugs.
 
 ## Official Documentation
 
