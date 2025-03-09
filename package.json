@@ -13,11 +13,19 @@
   ],
   "main": "build/index.js",
   "exports": {
-    ".": "./build/index.js"
+    ".": "./build/index.js",
+    "./types": "./build/src/types.js",
+    "./strategies": "./build/src/strategies/main.js"
   },
   "scripts": {
-    "pretest": "npm run lint",
-    "test": "c8 npm run quick:test",
+    "pretest": "npm run lint && rm -rf coverage/tmp && mkdir -p coverage/tmp",
+    "posttest": "cp -r coverage/*/tmp/. coverage/tmp && c8 report",
+    "test": "npm run test:sqlite && npm run test:pg && npm run test:mysql && npm run test:legacy_mysql && npm run test:mssql",
+    "test:mysql": "cross-env NODE_DEBUG=\"adonisjs:lucid-slugify\" DB=mysql c8 --report-dir coverage/mysql npm run test:run",
+    "test:legacy_mysql": "cross-env NODE_DEBUG=\"adonisjs:lucid-slugify\" DB=legacy_mysql c8 --report-dir coverage/legacy_mysql npm run test:run",
+    "test:mssql": "cross-env NODE_DEBUG=\"adonisjs:lucid-slugify\" DB=mssql c8 --report-dir coverage/mssql npm run test:run",
+    "test:sqlite": "cross-env NODE_DEBUG=\"adonisjs:lucid-slugify\" DB=sqlite c8 --report-dir coverage/sqlite npm run test:run",
+    "test:pg": "cross-env NODE_DEBUG=\"adonisjs:lucid-slugify\" DB=pg c8 --report-dir coverage/pg npm run test:run",
     "lint": "eslint .",
     "format": "prettier --write .",
     "typecheck": "tsc --noEmit",
@@ -27,27 +35,40 @@
     "version": "npm run build",
     "prepublishOnly": "npm run build",
     "release": "release-it",
-    "quick:test": "node --import=ts-node-maintained/register/esm --enable-source-maps bin/test.ts"
+    "test:run": "node --import=ts-node-maintained/register/esm --enable-source-maps bin/test.ts",
+    "quick:test": "DB=sqlite c8 node --import=ts-node-maintained/register/esm --enable-source-maps bin/test.ts"
   },
   "devDependencies": {
-    "@adonisjs/eslint-config": "^2.0.0-beta.6",
+    "@adonisjs/core": "^6.17.2",
+    "@adonisjs/eslint-config": "^2.0.0",
+    "@adonisjs/lucid": "^21.6.0",
     "@adonisjs/prettier-config": "^1.4.0",
     "@adonisjs/tsconfig": "^1.4.0",
-    "@japa/assert": "^4.0.0",
-    "@japa/expect": "^3.0.2",
-    "@japa/expect-type": "^2.0.2",
-    "@japa/file-system": "^2.3.1",
-    "@japa/runner": "^3.1.4",
-    "@release-it/conventional-changelog": "^9.0.4",
-    "@swc/core": "^1.10.1",
-    "@types/node": "^22.10.2",
+    "@japa/assert": "^4.0.1",
+    "@japa/expect": "^3.0.3",
+    "@japa/expect-type": "^2.0.3",
+    "@japa/file-system": "^2.3.2",
+    "@japa/runner": "^4.2.0",
+    "@release-it/conventional-changelog": "^10.0.0",
+    "@swc/core": "1.10.7",
+    "@types/node": "^22.13.9",
+    "better-sqlite3": "^11.8.1",
     "c8": "^10.1.3",
-    "eslint": "^9.17.0",
-    "prettier": "^3.4.2",
-    "release-it": "^17.11.0",
-    "ts-node-maintained": "^10.9.4",
-    "tsup": "^8.3.5",
-    "typescript": "^5.7.2"
+    "cross-env": "^7.0.3",
+    "eslint": "^9.21.0",
+    "luxon": "^3.5.0",
+    "mysql2": "^3.13.0",
+    "pg": "^8.13.3",
+    "prettier": "^3.5.3",
+    "release-it": "^18.1.2",
+    "tedious": "^18.6.1",
+    "ts-node-maintained": "^10.9.5",
+    "tsup": "^8.4.0",
+    "typescript": "^5.8.2"
+  },
+  "peerDependencies": {
+    "@adonisjs/core": "^6.17.2",
+    "@adonisjs/lucid": "^21.6.0"
   },
   "homepage": "https://github.com/adonisjs/lucid-slugify#readme",
   "repository": {
@@ -57,7 +78,11 @@
   "bugs": {
     "url": "https://github.com/adonisjs/lucid-slugify/issues"
   },
-  "keywords": ["lucid", "slug", "unique-slugs"],
+  "keywords": [
+    "lucid",
+    "slug",
+    "unique-slugs"
+  ],
   "author": "Harminder Virk <virk@adonisjs.com>",
   "license": "MIT",
   "publishConfig": {
@@ -66,7 +91,9 @@
   },
   "tsup": {
     "entry": [
-      "index.ts"
+      "index.ts",
+      "src/types.ts",
+      "src/strategies/main.ts"
     ],
     "outDir": "./build",
     "clean": true,
@@ -108,5 +135,8 @@
       "tests/**"
     ]
   },
-  "prettier": "@adonisjs/prettier-config"
+  "prettier": "@adonisjs/prettier-config",
+  "dependencies": {
+    "nanoid": "^5.1.3"
+  }
 }
