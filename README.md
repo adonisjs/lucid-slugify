@@ -8,7 +8,7 @@
 
 ## Introduction
 
-Generating slugs is easy, but keeping them unique is hard. This package abstracts the complex parts and gives you a simple API to create and persist unique slugs to the database.
+Generating slugs is easy, but keeping them unique is hard. This package abstracts the hard parts and gives you a simple API to create and persist unique slugs to the database.
 
 Lucid slugify exports the `@slugify` decorator, which you can use on the model fields to mark them as slugs and define the source fields from which the slug should be generated. Under the hood, the decorator registers `beforeCreate` and `beforeUpdate` hooks to compute the slug and persist it to the database.
 
@@ -84,7 +84,7 @@ This won't be a problem if you are the only author of your blog since you can al
 
 However, if it's a community blog or forum, the chances of creating two or more posts with the same title are quite high.
 
-To prevent duplicate slugs, even when the titles are the same, you can use one of the following strategies.
+You can use one of the following strategies to prevent duplicate slugs even when the titles are the same.
 
 ### dbIncrement
 
@@ -93,20 +93,24 @@ The `dbIncrement` strategy performs a select query to find similar slugs and app
 - Creating a post with `slug=hello-world` will result in `hello-world-6`.
 - Similarly, creating a post with `slug=introduction-to-social-auth` will result in `introduction-to-social-auth-5`.
 
-| id  | title                       | slug                          |
-| --- | --------------------------- | ----------------------------- |
-| 1   | Hello world                 | hello-world                   |
-| 2   | Hello world                 | hello-world-5                 |
-| 3   | Hello world                 | hello10world                  |
-| 4   | Hello world                 | hello-10-world                |
-| 5   | Introduction to social auth | introduction-to-social-auth   |
-| 6   | Introduction to social auth | introduction-to-social-auth-4 |
-| 7   | Hello world                 | hello-world-2                 |
-| 8   | Hello world fanny           | hello-world-fanny             |
-| 9   | Hello world                 | post-hello-world              |
-| 10  | Hello world                 | post-11am-hello-world11       |
-| 11  | Hello world                 | post-11am-hello-world         |
-| 12  | Introduction to social auth | introdUction-to-Social-auTH-1 |
+```
++----+-----------------------------+-------------------------------+
+| id | title                       | slug                          |
++----+-----------------------------+-------------------------------+
+| 1  | Hello world                 | hello-world                   |
+| 2  | Hello world                 | hello-world-5                 |
+| 3  | Hello world                 | hello10world                  |
+| 4  | Hello world                 | hello-10-world                |
+| 5  | Introduction to social auth | introduction-to-social-auth   |
+| 6  | Introduction to social auth | introduction-to-social-auth-4 |
+| 7  | Hello world                 | hello-world-2                 |
+| 8  | Hello world fanny           | hello-world-fanny             |
+| 9  | Hello world                 | post-hello-world              |
+| 10 | Hello world                 | post-11am-hello-world11       |
+| 11 | Hello world                 | post-11am-hello-world         |
+| 12 | Introduction to social auth | introdUction-to-Social-auTH-1 |
++----+-----------------------------+-------------------------------+
+```
 
 ### shortId
 
@@ -169,6 +173,155 @@ The `slugify` decorator does not generate slugs when the value of one or more so
 
 ## Available options
 
+## Available options
+
+Following is the list of available options accepted by the `@slugify` decorator.
+
+<table>
+<tr>
+  <td colspan="2"><code>{</code></td>
+</tr>
+<tr>
+  <td valign="top"><code>"fields":</code></td>
+  <td>
+    <p>
+    An array of source fields to use for generating the slug. The value of multiple fields is concatenated using the <code>config.separator</code> property.
+    </p>
+  </td>
+</tr>
+<tr>
+  <td valign="top"><code>"strategy":</code></td>
+  <td>
+    <p>
+    Reference to a pre-existing strategy or a factory function that returns a custom strategy implementation.
+    </p>
+  </td>
+</tr>
+<tr>
+  <td valign="top"><code>"allowUpdates":</code></td>
+  <td>
+    <p>
+    A boolean to enable updates. <strong>Updates are disabled by default</strong>.
+    </p>
+  </td>
+</tr>
+<tr>
+  <td valign="top"><code>"maxLength":</code></td>
+  <td>
+    <p>
+    The maximum length for the generated slug. The final slug value can be slightly over the defined <code>maxLength</code> in the following scenarios.
+    </p>
+    <p>
+      <strong>No max length is applied by default.</strong>
+    </p>
+  <ul>
+  <li>
+    When <code>completeWords</code> is set to true.
+  </li>
+  <li>
+    When using the <code>dbIncrement</code> strategy. The counter value is appended after trimming the value for the <code>maxLength</code>.
+  </li>
+  </ul>
+  </td>
+</tr>
+<tr>
+  <td valign="top"><code>"completeWords":</code></td>
+  <td>
+    <p>
+    A boolean that forces to complete the words when applying the <code>maxLength</code> property. Completing words will generate a slug larger than the <code>maxLength</code>. So, keep some buffer between the maxLength property and the database storage size.
+    </p>
+    <p>
+      <strong>Complete words are disabled by default.</strong>
+    </p>
+  </td>
+</tr>
+<tr>
+  <td valign="top"><code>"separator":</code></td>
+  <td>
+    <p>
+    The separator to use for creating the slug. <strong>A dash <code>-</code> is used by default.</strong>
+    </p>
+  </td>
+</tr>
+<tr>
+  <td valign="top"><code>"transformer":</code></td>
+  <td>
+    <p>
+    A custom function to convert non-string data types to a string value. For example, if the source field from which the slug is generated is a boolean, then we will convert it to <code>"1"</code> or <code>"0"</code>.
+    </p>
+    <p>
+    By defining the <code>transformer</code> property, you can decide how different data types can be converted to a string.
+    </p>
+  </td>
+</tr>
+<tr>
+  <td colspan="2"><code>}</code></td>
+</tr>
+</table>
+
+## Using custom strategies
+
+Custom strategies can be used if you want to handle the uniqueness of slugs yourself. A strategy must implement the [SlugifyStrategyContract](https://github.com/adonisjs/lucid-slugify/blob/3.x/src/types.ts#L130).
+
+```ts
+import { SlugifyStrategyContract } from '@adonisjs/lucid-slugify/types'
+
+export class MyCustomStrategy implements SlugifyStrategyContract {
+  maxLengthBuffer: number = 0
+
+  async makeSlugUnique(modelInstance: LucidRow, field: string, value: string): string {}
+}
+```
+
+The `makeSlugUnique` method receives the following arguments.
+
+- `modelInstance`: Reference to the model instance that will be persisted in the database
+- `field`: The name of the field for which the unique slug will be created.
+- `value`: The base value to convert to a unique value.
+
+Once you have created the strategy, you can use it with the `@slugify` decorator, as shown in the following example.
+
+```ts
+export default class Post extends BaseModel {
+  @column({ isPrimary: true })
+  declare id: number
+
+  @column()
+  declare title: string
+
+  @column()
+  @slugify({
+    strategy: () => {
+      return new MyCustomStrategy()
+    },
+    fields: ['title'],
+  })
+  declare slug: string
+}
+```
+
+## Self creating slugs
+
+The default implementation used by Lucid slugify for creating slugs works great with English words. However, if you are using Non-Latin alphabets, replace the implementation for creating slugs with a custom one.
+
+You can override the static `slugify` method on the `Slugifier` class. The following code has to be executed only once.
+
+```ts
+import { Slugifier } from '@adonisjs/lucid-slugify'
+
+/**
+ * Make sure to install the "transliteration" package
+ */
+import { slugify } from 'transliteration'
+
+Slugifier.slugify = function (value, options) {
+  return slugify(value, {
+    separator: options.separator,
+    lowercase: options.lower,
+  })
+}
+```
+
 ## Contributing
 
 One of the primary goals of AdonisJS is to have a vibrant community of users and contributors who believe in the principles of the framework.
@@ -177,7 +330,7 @@ We encourage you to read the [contribution guide](https://github.com/adonisjs/.g
 
 ## Code of Conduct
 
-In order to ensure that the AdonisJS community is welcoming to all, please review and abide by the [Code of Conduct](https://github.com/adonisjs/.github/blob/main/docs/CODE_OF_CONDUCT.md).
+To ensure that the AdonisJS community is welcoming to all, please review and abide by the [Code of Conduct](https://github.com/adonisjs/.github/blob/main/docs/CODE_OF_CONDUCT.md).
 
 ## License
 
