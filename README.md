@@ -37,7 +37,7 @@ export default class Post extends BaseModel {
 
 ## Installation and usage
 
-You can install the `@adonisjs/lucid-slugify` package from the npm packages registry. Ensure your application uses `@adonisjs/core@6` and `@adonisjs/lucid@21`.
+You can install the `@adonisjs/lucid-slugify` package from the npm packages registry. Ensure your application uses `@adonisjs/core@7` and `@adonisjs/lucid@22`.
 
 ```sh
 npm i @adonisjs/lucid-slugify
