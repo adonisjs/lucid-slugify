@@ -39,9 +39,9 @@
     "quick:test": "DB=sqlite c8 node --import=@poppinss/ts-exec --enable-source-maps bin/test.ts"
   },
   "devDependencies": {
-    "@adonisjs/core": "^7.2.0",
+    "@adonisjs/core": "^7.3.2",
     "@adonisjs/eslint-config": "^3.0.0",
-    "@adonisjs/lucid": "^22.0.0",
+    "@adonisjs/lucid": "^22.4.2",
     "@adonisjs/prettier-config": "^1.4.5",
     "@adonisjs/tsconfig": "^2.0.0",
     "@japa/assert": "^4.2.0",
@@ -49,25 +49,25 @@
     "@japa/expect-type": "^2.0.4",
     "@japa/file-system": "^3.0.0",
     "@japa/runner": "^5.3.0",
-    "@release-it/conventional-changelog": "^10.0.6",
+    "@release-it/conventional-changelog": "^11.0.0",
     "@poppinss/ts-exec": "^1.4.4",
-    "@types/node": "^25.5.0",
+    "@types/node": "^25.6.0",
     "better-sqlite3": "^12.8.0",
     "c8": "^11.0.0",
     "cross-env": "^10.1.0",
-    "eslint": "^10.1.0",
+    "eslint": "^10.2.1",
     "luxon": "^3.7.2",
     "mysql2": "^3.20.0",
     "pg": "^8.20.0",
-    "prettier": "^3.8.1",
-    "release-it": "^19.2.4",
+    "prettier": "^3.8.3",
+    "release-it": "^20.0.1",
     "tedious": "^19.2.1",
     "tsup": "^8.4.0",
-    "typescript": "^6.0.2"
+    "typescript": "^6.0.3"
   },
   "peerDependencies": {
-    "@adonisjs/core": "^7.0.0",
-    "@adonisjs/lucid": "^22.0.0"
+    "@adonisjs/core": "^7.3.2",
+    "@adonisjs/lucid": "^22.4.2"
   },
   "homepage": "https://github.com/adonisjs/lucid-slugify#readme",
   "repository": {
