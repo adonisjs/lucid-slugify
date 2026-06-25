@@ -15,18 +15,10 @@ Lucid slugify exports the `@slugify` decorator, which you can use on the model f
 In the following example, we mark the `slug` field as the slug and compute its value using the `title` field. We also use the [dbIncrement](#dbincrement) strategy to keep slugs unique.
 
 ```ts
-import { DateTime } from 'luxon'
-import { BaseModel, column } from '@adonisjs/lucid/orm'
+import { PostSchema } from '#database/schema'
 import { slugify } from '@adonisjs/lucid-slugify'
 
-export default class Post extends BaseModel {
-  @column({ isPrimary: true })
-  declare id: number
-
-  @column()
-  declare title: string
-
-  @column()
+export default class Post extends PostSchema {
   @slugify({
     strategy: 'dbIncrement',
     fields: ['title'],
@@ -37,7 +29,7 @@ export default class Post extends BaseModel {
 
 ## Installation and usage
 
-You can install the `@adonisjs/lucid-slugify` package from the npm packages registry. Ensure your application uses `@adonisjs/core@6` and `@adonisjs/lucid@21`.
+You can install the `@adonisjs/lucid-slugify` package from the npm packages registry. Ensure your application uses `@adonisjs/core@7` and `@adonisjs/lucid@22`.
 
 ```sh
 npm i @adonisjs/lucid-slugify
@@ -54,20 +46,12 @@ pnpm add @adonisjs/lucid-slugify
 Once done, you can mark a field as a slug using the `@slugify` decorator. Make sure to specify the source field(s) from which the slug should be generated.
 
 ```ts
-import { DateTime } from 'luxon'
-import { BaseModel, column } from '@adonisjs/lucid/orm'
+import { PostSchema } from '#database/schema'
 
 // 👇 Import decorator
 import { slugify } from '@adonisjs/lucid-slugify'
 
-export default class Post extends BaseModel {
-  @column({ isPrimary: true })
-  declare id: number
-
-  @column()
-  declare title: string
-
-  @column()
+export default class Post extends PostSchema {
   // 👇 Use it on a column
   @slugify({
     fields: ['title'],
@@ -75,6 +59,8 @@ export default class Post extends BaseModel {
   declare slug: string
 }
 ```
+
+The decorator computes the slug only when the column does not already have a value. If you assign a value to the slug column manually, your value is left untouched.
 
 ## Uniqueness of slug
 
@@ -112,19 +98,14 @@ The `dbIncrement` strategy performs a select query to find similar slugs and app
 +----+-----------------------------+-------------------------------+
 ```
 
+This strategy uses the same database connection as the model being persisted and works with PostgreSQL, MySQL (including 5.7), SQLite, and SQL Server. Using it with any other dialect throws the [`E_UNSUPPORTED_DB_DIALECT`](#errors) exception.
+
 ### shortId
 
-The `shortId` strategy appends a **10-digit short id** to the slug to make it unique. This strategy does not perform any additional database queries.
+The `shortId` strategy appends a **10-character short id** to the slug to make it unique. This strategy does not perform any additional database queries.
 
 ```ts
-export default class Post extends BaseModel {
-  @column({ isPrimary: true })
-  declare id: number
-
-  @column()
-  declare title: string
-
-  @column()
+export default class Post extends PostSchema {
   @slugify({
     strategy: 'shortId',
     fields: ['title'],
@@ -141,6 +122,10 @@ export default class Post extends BaseModel {
 +----+-------------+------------------------+
 ```
 
+### No strategy
+
+When you do not specify a strategy, the slug is generated and persisted as-is, without any uniqueness guarantees. This is the default behavior and is suitable when the source fields are already unique (for example, a SKU or an email address).
+
 ## Updating slugs
 
 By default, slugs are not updated when you update a model instance, and this is how it should be when slugs are used to look up a record, as changing a slug will result in a broken URL.
@@ -150,14 +135,7 @@ However, if slugs are not primarily used to look up records, you may want to upd
 You can enable updates by using the `allowUpdates` flag.
 
 ```ts
-export default class Post extends BaseModel {
-  @column({ isPrimary: true })
-  declare id: number
-
-  @column()
-  declare title: string
-
-  @column()
+export default class Post extends PostSchema {
   @slugify({
     strategy: 'dbIncrement',
     fields: ['title'],
@@ -167,11 +145,21 @@ export default class Post extends BaseModel {
 }
 ```
 
+When updates are enabled, the slug is recomputed only when one of the source `fields` has been modified. If you mutate the slug column manually, your value takes precedence and the slug is not recomputed.
+
+You may also pass a function to `allowUpdates` to decide at runtime whether the slug should be updated for a given model instance.
+
+```ts
+@slugify({
+  fields: ['title'],
+  allowUpdates: (post) => post.status === 'draft',
+})
+declare slug: string
+```
+
 ## Null values and slug generation
 
 The `slugify` decorator does not generate slugs when the value of one or more source fields is `undefined` or `null`.
-
-## Available options
 
 ## Available options
 
@@ -185,7 +173,7 @@ Following is the list of available options accepted by the `@slugify` decorator.
   <td valign="top"><code>"fields":</code></td>
   <td>
     <p>
-    An array of source fields to use for generating the slug. The value of multiple fields is concatenated using the <code>config.separator</code> property.
+    An array of source fields to use for generating the slug. The value of multiple fields is concatenated using the <code>config.separator</code> property. <strong>This is the only required option.</strong>
     </p>
   </td>
 </tr>
@@ -193,7 +181,7 @@ Following is the list of available options accepted by the `@slugify` decorator.
   <td valign="top"><code>"strategy":</code></td>
   <td>
     <p>
-    Reference to a pre-existing strategy or a factory function that returns a custom strategy implementation.
+    The strategy to use for keeping slugs unique. It can be one of the pre-existing strategy names (<code>"dbIncrement"</code> or <code>"shortId"</code>) or a factory function that returns a custom strategy implementation. Defaults to no uniqueness handling.
     </p>
   </td>
 </tr>
@@ -201,7 +189,7 @@ Following is the list of available options accepted by the `@slugify` decorator.
   <td valign="top"><code>"allowUpdates":</code></td>
   <td>
     <p>
-    A boolean to enable updates. <strong>Updates are disabled by default</strong>.
+    A boolean to enable updates, or a function that receives the model instance and returns a boolean. <strong>Updates are disabled by default</strong>.
     </p>
   </td>
 </tr>
@@ -247,10 +235,10 @@ Following is the list of available options accepted by the `@slugify` decorator.
   <td valign="top"><code>"transformer":</code></td>
   <td>
     <p>
-    A custom function to convert non-string data types to a string value. For example, if the source field from which the slug is generated is a boolean, then we will convert it to <code>"1"</code> or <code>"0"</code>.
+    A custom function to convert non-string source values to a string before they are slugified. It receives the model instance, the field name, and the field value, and must return a string.
     </p>
     <p>
-    By defining the <code>transformer</code> property, you can decide how different data types can be converted to a string.
+    By default, booleans are converted to <code>"1"</code> or <code>"0"</code>, <code>Date</code> values are converted using <code>date.toJSON()</code>, and everything else is converted using <code>String(value)</code>.
     </p>
   </td>
 </tr>
@@ -259,39 +247,65 @@ Following is the list of available options accepted by the `@slugify` decorator.
 </tr>
 </table>
 
-## Using custom strategies
+### Generating slugs from multiple fields
 
-Custom strategies can be used if you want to handle the uniqueness of slugs yourself. A strategy must implement the [SlugifyStrategyContract](https://github.com/adonisjs/lucid-slugify/blob/3.x/src/types.ts#L130).
+When you specify more than one field, their values are concatenated using the `separator` (in the order they are defined) and the result is slugified.
 
 ```ts
+@slugify({
+  fields: ['seriesName', 'title'],
+  separator: '-',
+})
+declare slug: string
+```
+
+### Customizing the transformer
+
+The `transformer` is handy when a source field holds a rich data type that should not be stringified using the default rules.
+
+```ts
+@slugify({
+  fields: ['title', 'publishedAt'],
+  transformer: (post, field, value) => {
+    if (field === 'publishedAt' && value instanceof DateTime) {
+      return value.toFormat('yyyy-MM-dd')
+    }
+
+    return String(value)
+  },
+})
+declare slug: string
+```
+
+## Using custom strategies
+
+Custom strategies can be used if you want to handle the uniqueness of slugs yourself. A strategy must implement the [`SlugifyStrategyContract`](#slugifystrategycontract) interface.
+
+```ts
+import { LucidRow } from '@adonisjs/lucid/types/model'
 import { SlugifyStrategyContract } from '@adonisjs/lucid-slugify/types'
 
 export class MyCustomStrategy implements SlugifyStrategyContract {
   maxLengthBuffer: number = 0
 
-  async makeSlugUnique(modelInstance: LucidRow, field: string, value: string): string {}
+  async makeSlugUnique(modelInstance: LucidRow, field: string, value: string) {
+    return value
+  }
 }
 ```
 
 The `makeSlugUnique` method receives the following arguments.
 
-- `modelInstance`: Reference to the model instance that will be persisted in the database
+- `modelInstance`: Reference to the model instance that will be persisted in the database.
 - `field`: The name of the field for which the unique slug will be created.
 - `value`: The base value to convert to a unique value.
 
-Once you have created the strategy, you can use it with the `@slugify` decorator, as shown in the following example.
+Once you have created the strategy, you can use it with the `@slugify` decorator by registering it as a factory function. The factory receives the model class, the property name, and the resolved decorator config, allowing you to build the strategy with the same configuration.
 
 ```ts
-export default class Post extends BaseModel {
-  @column({ isPrimary: true })
-  declare id: number
-
-  @column()
-  declare title: string
-
-  @column()
+export default class Post extends PostSchema {
   @slugify({
-    strategy: () => {
+    strategy: (model, propertyName, config) => {
       return new MyCustomStrategy()
     },
     fields: ['title'],
@@ -300,11 +314,17 @@ export default class Post extends BaseModel {
 }
 ```
 
+The built-in strategy classes are also exported, so you can reuse or extend them from a factory function.
+
+```ts
+import { DbIncrementStrategy, ShortIdStrategy } from '@adonisjs/lucid-slugify/strategies'
+```
+
 ## Self creating slugs
 
 The default implementation used by Lucid slugify for creating slugs works great with English words. However, if you are using Non-Latin alphabets, replace the implementation for creating slugs with a custom one.
 
-You can override the static `slugify` method on the `Slugifier` class. The following code has to be executed only once.
+You can override the static `slugify` method on the `Slugifier` class. The following code has to be executed only once (for example, inside a service provider).
 
 ```ts
 import { Slugifier } from '@adonisjs/lucid-slugify'
@@ -321,6 +341,74 @@ Slugifier.slugify = function (value, options) {
   })
 }
 ```
+
+## API reference
+
+### Entry points
+
+| Import path                          | Exports                                                                                      |
+| ------------------------------------ | -------------------------------------------------------------------------------------------- |
+| `@adonisjs/lucid-slugify`            | [`slugify`](#slugify-config) decorator, [`Slugifier`](#slugifier) class, [`errors`](#errors) |
+| `@adonisjs/lucid-slugify/strategies` | `DbIncrementStrategy`, `ShortIdStrategy`                                                     |
+| `@adonisjs/lucid-slugify/types`      | `SlugifyConfig`, `SlugifierConfig`, [`SlugifyStrategyContract`](#slugifystrategycontract)    |
+
+### slugify(config)
+
+A property decorator that marks a Lucid model column as a slug. It registers `beforeCreate` and `beforeUpdate` hooks on the model to compute and persist the slug.
+
+```ts
+import { slugify } from '@adonisjs/lucid-slugify'
+
+@slugify({ fields: ['title'], strategy: 'dbIncrement' })
+declare slug: string
+```
+
+See [Available options](#available-options) for the complete list of accepted config properties.
+
+### Slugifier
+
+The class that powers slug generation. You usually do not interact with it directly — the `@slugify` decorator creates and manages a `Slugifier` instance per slug field for you.
+
+The one member relevant to end-users is the static `slugify` method, which converts a string into a URL-safe slug. Override it to plug in a custom slugification routine (see [Self creating slugs](#self-creating-slugs)).
+
+```ts
+Slugifier.slugify(value: string, options: { separator: string; lower: boolean }): string
+```
+
+### SlugifyStrategyContract
+
+The interface that every strategy (built-in or custom) implements.
+
+```ts
+interface SlugifyStrategyContract {
+  /**
+   * The number of characters the strategy may add to the slug to make it
+   * unique. The slugifier reserves this many characters when applying the
+   * `maxLength` option, so the final value stays within the column size.
+   */
+  maxLengthBuffer: number
+
+  /**
+   * Convert the computed slug value into a unique value that is safe to
+   * persist to the database.
+   */
+  makeSlugUnique(modelInstance: LucidRow, field: string, value: string): Promise<string> | string
+}
+```
+
+### errors
+
+The package exports its exceptions under the `errors` namespace.
+
+```ts
+import { errors } from '@adonisjs/lucid-slugify'
+
+errors.E_UNSUPPORTED_DB_DIALECT
+```
+
+| Exception                  | Raised when                                                                     |
+| -------------------------- | ------------------------------------------------------------------------------- |
+| `E_UNSUPPORTED_DB_DIALECT` | The `dbIncrement` strategy is used with a database dialect it does not support. |
 
 ## Contributing
 
