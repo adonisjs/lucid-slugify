@@ -116,14 +116,9 @@ export class DbIncrementStrategy implements SlugifyStrategyContract {
   ) {
     const result = await client
       .modelQuery(model)
-      .select(
-        client.raw(
-          `CAST(REGEXP_SUBSTR(${columnName}, '[0-9]+$') AS UNSIGNED) as lucid_slugify_counter`
-        )
-      )
+      .select(columnName)
       .whereRaw(`?? REGEXP ?`, [columnName, `^${slugValue}(${this.#config.separator}[0-9]*)?$`])
-      .orderBy('lucid_slugify_counter', 'desc')
-      .pojo<{ lucid_slugify_counter: number }>()
+      .pojo<Record<string, string>>()
       .exec()
 
     debug('mysql: matching slug counters "%s": %O', slugValue, result)
@@ -132,7 +127,7 @@ export class DbIncrementStrategy implements SlugifyStrategyContract {
       return slugValue
     }
 
-    const counter = result.find((row) => row.lucid_slugify_counter)?.lucid_slugify_counter ?? 0
+    const counter = this.#getCounter(slugValue, columnName, result)
     return `${slugValue}${this.#config.separator}${counter + 1}`
   }
 
@@ -174,13 +169,9 @@ export class DbIncrementStrategy implements SlugifyStrategyContract {
   ): Promise<string> {
     const result = await client
       .modelQuery(model)
-      .select(
-        client.raw(`SUBSTRING(${columnName} from '[0-9]+$')::INTEGER as lucid_slugify_counter`)
-      )
+      .select(columnName)
       .whereRaw(`?? ~* ?`, [columnName, `^${slugValue}(${this.#config.separator}[0-9]*)?$`])
-      .orderBy('lucid_slugify_counter', 'desc')
-      .limit(2)
-      .pojo<{ lucid_slugify_counter: number }>()
+      .pojo<Record<string, string>>()
       .exec()
 
     debug('pg: matching slug counters "%s": %O', slugValue, result)
@@ -189,7 +180,7 @@ export class DbIncrementStrategy implements SlugifyStrategyContract {
       return slugValue
     }
 
-    const counter = result.find((row) => row.lucid_slugify_counter)?.lucid_slugify_counter ?? 0
+    const counter = this.#getCounter(slugValue, columnName, result)
     return `${slugValue}${this.#config.separator}${counter + 1}`
   }
 
