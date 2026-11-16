@@ -78,4 +78,60 @@ test.group('Db increment strategy', (group) => {
       'introduction-to-social-auth-5'
     )
   })
+
+  test('ignore the digits at the end of a base slug', async ({ assert }) => {
+    const connection = db.connection()
+    await dbSetup(connection)
+
+    const strategy = new DbIncrementStrategy({ separator: '-' })
+    const post = new Post()
+
+    await connection.table('posts').insert({ title: 'Article 2', slug: 'article2' })
+    assert.equal(await strategy.makeSlugUnique(post, 'slug', 'article2'), 'article2-1')
+
+    await connection.table('posts').insert([
+      { title: 'Article 2', slug: 'article2-1' },
+      { title: 'Article 2', slug: 'article2-4' },
+    ])
+    assert.equal(await strategy.makeSlugUnique(post, 'slug', 'article2'), 'article2-5')
+
+    await connection.table('posts').insert({ title: 'Post 2', slug: 'post-2' })
+    assert.equal(await strategy.makeSlugUnique(post, 'slug', 'post-2'), 'post-2-1')
+  })
+
+  test('fetch at most one row to find the counter', async ({ assert }) => {
+    const connection = db.connection()
+    await dbSetup(connection)
+
+    const strategy = new DbIncrementStrategy({ separator: '-' })
+    const post = new Post()
+
+    await connection.table('posts').insert([
+      { title: 'Article 2', slug: 'article2' },
+      { title: 'Article 2', slug: 'article2-1' },
+      { title: 'Article 2', slug: 'article2-4' },
+      { title: 'Article 2', slug: 'article2-2' },
+      { title: 'Article 2', slug: 'article2-10' },
+    ])
+
+    const fetchedRows: number[] = []
+    const knex = connection.getReadClient()
+    const onResponse = (response: unknown) => {
+      if (Array.isArray(response)) {
+        fetchedRows.push(response.length)
+      }
+    }
+
+    knex.on('query-response', onResponse)
+    try {
+      assert.equal(await strategy.makeSlugUnique(post, 'slug', 'article2'), 'article2-11')
+    } finally {
+      knex.off('query-response', onResponse)
+    }
+
+    assert.deepEqual(fetchedRows, [1])
+  }).skip(
+    !['pg', 'mysql'].includes(process.env.DB!),
+    'Only MySQL 8+ and PostgreSQL find the counter inside the database'
+  )
 })
