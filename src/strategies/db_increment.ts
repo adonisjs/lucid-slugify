@@ -53,6 +53,17 @@ export class DbIncrementStrategy implements SlugifyStrategyContract {
   }
 
   /**
+   * Returns the position of the first character of the counter inside a
+   * matching slug, as a 1-based index for the SQL "SUBSTRING" function.
+   * The counter starts after "<slug><separator>", so the digits at the
+   * end of the slug itself are not read as a counter. The length is
+   * counted in characters (code points), as the databases count them.
+   */
+  #getCounterPosition(slug: string): number {
+    return [...`${slug}${this.#config.separator}`].length + 1
+  }
+
+  /**
    * Makes the unique slug for the SQLite database
    */
   async #getSlugForSqlite(
@@ -118,12 +129,14 @@ export class DbIncrementStrategy implements SlugifyStrategyContract {
       .modelQuery(model)
       .select(
         client.raw(
-          `CAST(REGEXP_SUBSTR(${columnName}, '[0-9]+$') AS UNSIGNED) as lucid_slugify_counter`
+          `COALESCE(CAST(NULLIF(SUBSTRING(??, ?), '') AS UNSIGNED), 0) as lucid_slugify_counter`,
+          [columnName, this.#getCounterPosition(slugValue)]
         )
       )
       .whereRaw(`?? REGEXP ?`, [columnName, `^${slugValue}(${this.#config.separator}[0-9]*)?$`])
       .orderBy('lucid_slugify_counter', 'desc')
-      .pojo<{ lucid_slugify_counter: number }>()
+      .limit(1)
+      .pojo<{ lucid_slugify_counter: number | string }>()
       .exec()
 
     debug('mysql: matching slug counters "%s": %O', slugValue, result)
@@ -132,7 +145,7 @@ export class DbIncrementStrategy implements SlugifyStrategyContract {
       return slugValue
     }
 
-    const counter = result.find((row) => row.lucid_slugify_counter)?.lucid_slugify_counter ?? 0
+    const counter = Number(result[0].lucid_slugify_counter)
     return `${slugValue}${this.#config.separator}${counter + 1}`
   }
 
@@ -175,12 +188,15 @@ export class DbIncrementStrategy implements SlugifyStrategyContract {
     const result = await client
       .modelQuery(model)
       .select(
-        client.raw(`SUBSTRING(${columnName} from '[0-9]+$')::INTEGER as lucid_slugify_counter`)
+        client.raw(
+          `COALESCE(NULLIF(SUBSTRING(?? FROM ?::INTEGER), '')::INTEGER, 0) as lucid_slugify_counter`,
+          [columnName, this.#getCounterPosition(slugValue)]
+        )
       )
       .whereRaw(`?? ~* ?`, [columnName, `^${slugValue}(${this.#config.separator}[0-9]*)?$`])
       .orderBy('lucid_slugify_counter', 'desc')
-      .limit(2)
-      .pojo<{ lucid_slugify_counter: number }>()
+      .limit(1)
+      .pojo<{ lucid_slugify_counter: number | string }>()
       .exec()
 
     debug('pg: matching slug counters "%s": %O', slugValue, result)
@@ -189,7 +205,7 @@ export class DbIncrementStrategy implements SlugifyStrategyContract {
       return slugValue
     }
 
-    const counter = result.find((row) => row.lucid_slugify_counter)?.lucid_slugify_counter ?? 0
+    const counter = Number(result[0].lucid_slugify_counter)
     return `${slugValue}${this.#config.separator}${counter + 1}`
   }
 
